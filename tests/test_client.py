@@ -5,7 +5,8 @@ from tatrapayplus.models import *
 def test_client():
     config = TatrapayPlusConfig(
         base_url='https://api.tatrabanka.sk/tatrapayplus/sandbox',
-
+        client_id='',
+        client_secret='',
         redirect_uri='https://tatrabanka.sk/',
     )
 
