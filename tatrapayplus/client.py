@@ -66,23 +66,29 @@ class TatrapayPlusClient:
             "IP-Address": str(socket.gethostbyname(socket.gethostname())),
         }
 
+    @staticmethod
+    def check_response(response):
+        if not response.ok:
+            logging.error("Error response:", response.text)
+        response.raise_for_status()
+
     def create_payment(
         self, request: InitiatePaymentRequest
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
-        response = self.session.post(url, data=request.json(exclude_none=True))
-        if not response.ok:
-            logging.error("Error response:", response.text)
 
-        response.raise_for_status()
+        response = self.session.post(url, data=request.json(exclude_none=True))
+        self.check_response(response)
+
         return InitiatePaymentResponse.parse_obj(response.json())
 
     def get_payment_methods(self) -> PaymentMethodsListResponse:
         url = f"{self.base_url}{Urls.PAYMENT_METHODS}"
-        headers = self.get_headers()
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
+
+        response = self.session.get(url)
+        self.check_response(response)
+
         return PaymentMethodsListResponse.parse_obj(response.json())
 
     def get_available_payment_methods(
