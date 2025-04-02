@@ -111,3 +111,20 @@ def test_full_payment(tatrapay_client):
 
     payment_response = tatrapay_client.create_payment(payment_data)
     assert payment_response.paymentId.__root__ is not None
+
+
+def test_get_payment_methods(tatrapay_client):
+    response = tatrapay_client.get_payment_methods()
+    assert response.paymentMethods.__root__ is not None
+
+
+def test_available_payment_methods(tatrapay_client):
+    expected_methods = {
+        PaymentMethod.BANK_TRANSFER,
+        PaymentMethod.CARD_PAY,
+        PaymentMethod.QR_PAY,
+        PaymentMethod.DIRECT_API,
+    }
+    response = tatrapay_client.get_available_payment_methods("EUR", "SK", 10)
+
+    assert expected_methods.issubset( [p.paymentMethod for p in response])
