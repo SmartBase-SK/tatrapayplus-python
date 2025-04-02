@@ -1,9 +1,11 @@
-import requests
-import uuid
-from typing import Optional
-from pydantic import AnyUrl, BaseModel, EmailStr, Field, conint, constr
-from pydantic import HttpUrl
 import socket
+import time
+import uuid
+from builtins import print
+from typing import Optional
+
+import requests
+from pydantic import BaseModel, HttpUrl
 
 from tatrapayplus import enums
 from tatrapayplus.models import InitiatePaymentRequest, InitiatePaymentResponse
@@ -16,10 +18,23 @@ class TatrapayPlusConfig(BaseModel):
     redirect_uri: HttpUrl
     scope: str = enums.Scope.TATRAPAYPLUS
 
+
+class TatrapayPlusToken():
+    def __init__(self, token: str, expires_in: int):
+        self.token = token
+        self.expires_in = expires_in + time.time()
+
+    def is_expired(self) -> bool:
+        return time.time() >= self.expires_in
+
+    def __str__(self):
+        return self.token
+
+
 class TatrapayPlusClient:
     def __init__(self, config: TatrapayPlusConfig):
         self.config = config
-        self.token: Optional[str] = None
+        self.token: Optional[TatrapayPlusToken] = None
 
     def authenticate(self):
         token_url = f"{self.config.base_url}/auth/oauth/v2/token"
@@ -32,10 +47,10 @@ class TatrapayPlusClient:
         }
         response = requests.post(token_url, data=payload)
         response.raise_for_status()
-        self.token = response.json().get('access_token')
+        self.token = TatrapayPlusToken(response.json().get('access_token'), response.json().get('expires_in'))
 
     def get_headers(self):
-        if not self.token:
+        if not self.token or self.token.is_expired():
             self.authenticate()
         return {
             'Authorization': f'Bearer {self.token}',
@@ -55,4 +70,3 @@ class TatrapayPlusClient:
 
         response.raise_for_status()
         return InitiatePaymentResponse.parse_obj(response.json())
-

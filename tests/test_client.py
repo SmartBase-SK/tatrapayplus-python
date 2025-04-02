@@ -1,16 +1,23 @@
+import os
+
+import pytest
+
 from tatrapayplus.client import TatrapayPlusClient, TatrapayPlusConfig
 from tatrapayplus.models import *
 
 
-def test_client():
-    config = TatrapayPlusConfig(
+@pytest.fixture
+def tatrapay_config():
+    return TatrapayPlusConfig(
         base_url='https://api.tatrabanka.sk/tatrapayplus/sandbox',
-        client_id='',
-        client_secret='',
+        client_id=os.environ['TATRAPAY_CLIENT_ID'],
+        client_secret=os.environ['TATRAPAY_CLIENT_SECRET'],
         redirect_uri='https://tatrabanka.sk/',
     )
 
-    client = TatrapayPlusClient(config)
+
+def test_minimal_payment(tatrapay_config):
+    client = TatrapayPlusClient(tatrapay_config)
 
     payment_data = InitiatePaymentRequest(
         basePayment=BasePayment(
@@ -25,7 +32,4 @@ def test_client():
 
     payment_response = client.create_payment(payment_data)
     print(payment_response)
-    payment_id = payment_response.paymentId.__root__
-
-
-    assert payment_id is not None
+    assert payment_response.paymentId.__root__ is not None
