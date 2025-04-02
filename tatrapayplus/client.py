@@ -1,3 +1,4 @@
+import logging
 import socket
 import time
 import uuid
@@ -64,9 +65,8 @@ class TatrapayPlusClient:
         headers = self.get_headers()
         headers['Redirect-URI'] = self.config.redirect_uri
         response = requests.post(url, data=request.json(exclude_none=True), headers=headers)
-        if response.status_code != 201:
-            print("Error response:", response.text)
-            print("Error headers:", response.headers)
+        if not response.ok:
+            logging.error("Error response:", response.text)
 
         response.raise_for_status()
         return InitiatePaymentResponse.parse_obj(response.json())
