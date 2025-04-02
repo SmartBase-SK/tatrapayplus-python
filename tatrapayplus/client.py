@@ -1,22 +1,14 @@
+import logging
 import socket
 import time
 import uuid
-from builtins import print
 from typing import Optional
-
+from builtins import str
 import requests
 from pydantic import BaseModel, HttpUrl
 
 from tatrapayplus import enums
 from tatrapayplus.models import InitiatePaymentRequest, InitiatePaymentResponse
-
-
-class TatrapayPlusConfig(BaseModel):
-    base_url: HttpUrl
-    client_id: str
-    client_secret: str
-    redirect_uri: HttpUrl
-    scope: str = enums.Scope.TATRAPAYPLUS
 
 
 class TatrapayPlusToken():
@@ -32,18 +24,22 @@ class TatrapayPlusToken():
 
 
 class TatrapayPlusClient:
-    def __init__(self, config: TatrapayPlusConfig):
-        self.config = config
+    def __init__(self, base_url: str, client_id: str, client_secret: str, redirect_uri: str, scope: enums.Scope = enums.Scope.TATRAPAYPLUS):
+        self.base_url = base_url
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.redirect_uri = redirect_uri
+        self.scope = scope
         self.token: Optional[TatrapayPlusToken] = None
 
     def authenticate(self):
-        token_url = f"{self.config.base_url}/auth/oauth/v2/token"
+        token_url = f"{self.base_url}/auth/oauth/v2/token"
         payload = {
             'grant_type': 'client_credentials',
-            'client_id': self.config.client_id,
-            'client_secret': self.config.client_secret,
-            'redirect_uri': self.config.redirect_uri,
-            'scope': self.config.scope,
+            'client_id': self.client_id,
+            'client_secret': self.client_secret,
+            'redirect_uri': self.redirect_uri,
+            'scope': self.scope,
         }
         response = requests.post(token_url, data=payload)
         response.raise_for_status()
@@ -60,13 +56,12 @@ class TatrapayPlusClient:
         }
 
     def create_payment(self, request: InitiatePaymentRequest) -> InitiatePaymentResponse:
-        url = f"{self.config.base_url}/v1/payments"
+        url = f"{self.base_url}/v1/payments"
         headers = self.get_headers()
-        headers['Redirect-URI'] = self.config.redirect_uri
+        headers['Redirect-URI'] = self.redirect_uri
         response = requests.post(url, data=request.json(exclude_none=True), headers=headers)
-        if response.status_code != 201:
-            print("Error response:", response.text)
-            print("Error headers:", response.headers)
+        if not response.ok:
+            logging.error("Error response:", response.text)
 
         response.raise_for_status()
         return InitiatePaymentResponse.parse_obj(response.json())
