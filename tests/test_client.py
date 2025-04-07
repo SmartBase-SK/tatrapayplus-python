@@ -1,4 +1,5 @@
 import os
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -136,7 +137,23 @@ def test_cancel_payment(tatrapay_client):
     cancel_payment_response = tatrapay_client.cancel_payment(
         tatrapay_client.create_payment(get_minimal_payment_data()).paymentId.__root__
     )
-    assert cancel_payment_response.ok == True
+    assert cancel_payment_response.ok
+
+@patch("tatrapayplus.client.requests.Session.patch")
+def test_update_payment(mock_request, tatrapay_client):
+
+    mock_response = MagicMock()
+    mock_response.status_code = 201
+    mock_response.ok = True
+    mock_request.return_value = mock_response
+
+
+    update_data = CardPayUpdateInstruction(
+        operationType=OperationType.CHARGEBACK,
+        amount=AmountValue(__root__=120),
+    )
+    payment_update_response = tatrapay_client.update_payment("123", update_data)
+    assert payment_update_response.ok
 
 
 def test_get_payment_status(tatrapay_client):
@@ -144,3 +161,32 @@ def test_get_payment_status(tatrapay_client):
         tatrapay_client.create_payment(get_minimal_payment_data()).paymentId.__root__
     )
     assert payment_status is not None
+
+
+def test_set_appearance(tatrapay_client):
+    appearance_data = AppearanceRequest(
+        theme="SYSTEM",
+        surfaceAccent=ColorAttribute(colorDarkMode="#fff", colorLightMode="#fff"),
+        tintAccent=ColorAttribute(colorDarkMode="#fff", colorLightMode="#fff"),
+        tintOnAccent=ColorAttribute(colorDarkMode="#fff", colorLightMode="#fff"),
+    )
+    response = tatrapay_client.set_appearance(appearance_data)
+    assert response.ok
+
+
+@patch("tatrapayplus.client.requests.Session.post")
+def test_set_appearance_logo_mocked(mock_request, tatrapay_client):
+
+    mock_response = MagicMock()
+    mock_response.status_code = 201
+    mock_response.ok = True
+    mock_request.return_value = mock_response
+
+    logo_data = AppearanceLogoRequest(
+        logoImage="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
+    )
+
+    response = tatrapay_client.set_appearance_logo(logo_data)
+
+    assert response.ok
+

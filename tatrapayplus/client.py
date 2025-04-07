@@ -71,7 +71,6 @@ class TatrapayPlusClient:
     def check_response(response):
         if not response.ok:
             logging.error("Error response:", response.text)
-        response.raise_for_status()
 
     def create_payment(
         self, request: InitiatePaymentRequest
@@ -149,3 +148,16 @@ class TatrapayPlusClient:
             available_methods.append(method)
 
         return available_methods
+
+    def set_appearance(self, request: AppearanceRequest) -> Response:
+        url = f"{self.base_url}{Urls.APPEARANCES}"
+        response = self.session.post(url, data=request.json(exclude_none=True))
+        self.check_response(response)
+
+        return response
+    def set_appearance_logo(self, request: AppearanceLogoRequest) -> Response:
+        url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
+        response = self.session.post(url, data=request.json(exclude_none=True))
+        self.check_response(response)
+
+        return response
