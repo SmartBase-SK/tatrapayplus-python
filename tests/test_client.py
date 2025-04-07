@@ -16,11 +16,11 @@ def tatrapay_client():
     )
 
 
-def test_minimal_payment(tatrapay_client):
-    payment_data = InitiatePaymentRequest(
+def get_minimal_payment_data():
+    return InitiatePaymentRequest(
         basePayment=BasePayment(
             instructedAmount=Amount(
-                amountValue=AmountValue(__root__=10),
+                amountValue=AmountValue(__root__=120),
                 currency=CurrencyCode(__root__="EUR"),
             ),
             endToEnd=E2e(__root__=EndToEndId(__root__="ORDER123456")),
@@ -28,7 +28,9 @@ def test_minimal_payment(tatrapay_client):
         bankTransfer={},
     )
 
-    payment_response = tatrapay_client.create_payment(payment_data)
+
+def test_minimal_payment(tatrapay_client):
+    payment_response = tatrapay_client.create_payment(get_minimal_payment_data())
     assert payment_response.paymentId.__root__ is not None
 
 
@@ -127,4 +129,18 @@ def test_available_payment_methods(tatrapay_client):
     }
     response = tatrapay_client.get_available_payment_methods("EUR", "SK", 10)
 
-    assert expected_methods.issubset( [p.paymentMethod for p in response])
+    assert expected_methods.issubset([p.paymentMethod for p in response])
+
+
+def test_cancel_payment(tatrapay_client):
+    cancel_payment_response = tatrapay_client.cancel_payment(
+        tatrapay_client.create_payment(get_minimal_payment_data()).paymentId.__root__
+    )
+    assert cancel_payment_response.ok == True
+
+
+def test_get_payment_status(tatrapay_client):
+    payment_status = tatrapay_client.get_payment_status(
+        tatrapay_client.create_payment(get_minimal_payment_data()).paymentId.__root__
+    )
+    assert payment_status is not None
