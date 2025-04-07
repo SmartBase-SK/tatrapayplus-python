@@ -83,6 +83,17 @@ class TatrapayPlusClient:
 
         return InitiatePaymentResponse.parse_obj(response.json())
 
+    def create_payment_direct(
+        self, request: InitiateDirectTransactionRequest
+    ) -> InitiateDirectTransactionResponse:
+        url = f"{self.base_url}{Urls.DIRECT_PAYMENT}"
+        self.session.headers["Redirect-URI"] = self.redirect_uri
+
+        response = self.session.post(url, data=request.json(exclude_none=True))
+        self.check_response(response)
+
+        return InitiateDirectTransactionResponse.parse_obj(response.json())
+
     def get_payment_methods(self) -> PaymentMethodsListResponse:
         url = f"{self.base_url}{Urls.PAYMENT_METHODS}"
 
@@ -155,6 +166,7 @@ class TatrapayPlusClient:
         self.check_response(response)
 
         return response
+
     def set_appearance_logo(self, request: AppearanceLogoRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
         response = self.session.post(url, data=request.json(exclude_none=True))
