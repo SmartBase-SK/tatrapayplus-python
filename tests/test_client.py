@@ -263,6 +263,7 @@ def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client)
             "status": "OK",
             "currency": "EUR",
             "maskedCardNumber": "440577******5558",
+            "comfortPay": {"cid": "123", "status": "OK"},
         },
     }
 
@@ -277,3 +278,4 @@ def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client)
 
     assert response["simple_status"] == SimpleStatus.ACCEPTED
     assert response["saved_card"]["creditCard"] == "Visa"
+    assert response["saved_card"]["cid"] == "123"

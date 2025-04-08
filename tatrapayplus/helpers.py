@@ -4,6 +4,7 @@ from tatrapayplus.enums import SimpleStatus
 from tatrapayplus.models import (
     PaymentIntentStatusResponse,
     CardPayStatusStructure,
+    ComfortPayStatus,
 )
 from tatrapayplus.models import (
     PaymentMethod,
@@ -89,7 +90,7 @@ def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
         "creditCard": card_type,
     }
 
-    if comfort_pay and comfort_pay.status == "OK" and comfort_pay.cid:
-        saved_card_data["cid"]: comfort_pay.cid.__root__
+    if comfort_pay and comfort_pay.status == ComfortPayStatus.OK and comfort_pay.cid:
+        saved_card_data["cid"] =  comfort_pay.cid.__root__
 
     return saved_card_data
