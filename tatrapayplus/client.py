@@ -3,6 +3,7 @@ import socket
 import time
 import uuid
 from builtins import str
+from typing import Optional, List
 
 import requests
 from requests import Response
@@ -11,6 +12,20 @@ from tatrapayplus import enums
 from tatrapayplus.enums import Urls
 from tatrapayplus.helpers import get_simple_status, get_saved_card_data
 from tatrapayplus.models import *
+from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
+from tatrapayplus.models.appearance_request import AppearanceRequest
+from tatrapayplus.models.card_pay_update_instruction import CardPayUpdateInstruction
+from tatrapayplus.models.initiate_direct_transaction_request import InitiateDirectTransactionRequest
+from tatrapayplus.models.initiate_direct_transaction_response import (
+    InitiateDirectTransactionResponse,
+)
+from tatrapayplus.models.initiate_payment_request import InitiatePaymentRequest
+from tatrapayplus.models.initiate_payment_response import InitiatePaymentResponse
+from tatrapayplus.models.payment_intent_status_response import (
+    PaymentIntentStatusResponse,
+)
+from tatrapayplus.models.payment_method_rules import PaymentMethodRules
+from tatrapayplus.models.payment_methods_list_response import PaymentMethodsListResponse
 
 
 class TatrapayPlusToken:
@@ -79,10 +94,10 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
 
-        response = self.session.post(url, data=request.json(exclude_none=True))
+        response = self.session.post(url, json=request.to_dict())
         self.check_response(response)
 
-        return InitiatePaymentResponse.parse_obj(response.json())
+        return InitiatePaymentResponse.from_dict(response.json())
 
     def create_payment_direct(
         self, request: InitiateDirectTransactionRequest

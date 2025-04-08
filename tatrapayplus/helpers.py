@@ -1,15 +1,11 @@
 from tatrapayplus.enums import SimpleStatus
-from tatrapayplus.models import (
-    PaymentIntentStatusResponse,
-    CardPayStatusStructure,
-    ComfortPayStatus,
-)
-from tatrapayplus.models import (
-    PaymentMethod,
-    CardPayStatus,
-    BankTransferStatus,
-    PayLaterStatus,
-)
+from tatrapayplus.models.bank_transfer_status import BankTransferStatus
+from tatrapayplus.models.card_pay_status import CardPayStatus
+from tatrapayplus.models.card_pay_status_structure import CardPayStatusStructure
+from tatrapayplus.models.comfort_pay_status import ComfortPayStatus
+from tatrapayplus.models.pay_later_status import PayLaterStatus
+from tatrapayplus.models.payment_intent_status_response import PaymentIntentStatusResponse
+from tatrapayplus.models.payment_method import PaymentMethod
 
 AMEX = "AMEX"
 DISCOVER = "Discover"
