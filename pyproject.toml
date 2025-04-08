@@ -31,7 +31,6 @@ dependencies = [
     "ruff>=0.9.2",
     "pydantic<2.0",
     "pydantic[email]",
-    "card-identifier",
 ]
 
 [project.urls]
