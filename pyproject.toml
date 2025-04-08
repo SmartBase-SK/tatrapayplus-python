@@ -31,6 +31,7 @@ dependencies = [
     "ruff>=0.9.2",
     "pydantic<2.0",
     "pydantic[email]",
+    "card-identifier",
 ]
 
 [project.urls]
@@ -66,8 +67,8 @@ select = [
     "C90", "E", "W", "F", "PGH", "UP", "RUF", "TRY"
 ]
 ignore = [
-    "E501",  # Line too long
-    "E731",  # Do not assign lambda
+    "E501", # Line too long
+    "E731", # Do not assign lambda
 ]
 
 [tool.ruff.lint.per-file-ignores]

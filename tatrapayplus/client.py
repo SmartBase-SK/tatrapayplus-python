@@ -9,6 +9,7 @@ from requests import Response
 
 from tatrapayplus import enums
 from tatrapayplus.enums import Urls
+from tatrapayplus.helpers import get_simple_status, get_saved_card_data
 from tatrapayplus.models import *
 
 
@@ -102,13 +103,17 @@ class TatrapayPlusClient:
 
         return PaymentMethodsListResponse.parse_obj(response.json())
 
-    def get_payment_status(self, payment_id) -> PaymentIntentStatusResponse:
+    def get_payment_status(self, payment_id) -> dict:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}{Urls.STATUS}"
 
         response = self.session.get(url)
         self.check_response(response)
-
-        return PaymentIntentStatusResponse.parse_obj(response.json())
+        status = PaymentIntentStatusResponse.parse_obj(response.json())
+        return {
+            "status": status,
+            "simple_status": get_simple_status(status),
+            "saved_card": get_saved_card_data(status),
+        }
 
     def update_payment(self, payment_id, request: CardPayUpdateInstruction) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"

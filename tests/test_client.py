@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from tatrapayplus.client import TatrapayPlusClient
+from tatrapayplus.enums import SimpleStatus
 from tatrapayplus.models import *
 
 
@@ -113,6 +114,7 @@ def test_create_full_payment(tatrapay_client):
     )
 
     payment_response = tatrapay_client.create_payment(payment_data)
+
     assert payment_response.paymentId.__root__ is not None
 
 
@@ -172,6 +174,7 @@ def test_create_direct_payment(tatrapay_client):
     )
 
     payment_response = tatrapay_client.create_payment_direct(payment_data)
+
     assert payment_response.paymentId.__root__ is not None
 
 
@@ -248,3 +251,29 @@ def test_set_appearance_logo_mocked(mock_request, tatrapay_client):
     response = tatrapay_client.set_appearance_logo(logo_data)
 
     assert response.ok
+
+
+@patch("tatrapayplus.client.requests.Session.get")
+def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client):
+
+    mocked_status_response = {
+        "selectedPaymentMethod": "CARD_PAY",
+        "authorizationStatus": "AUTH_DONE",
+        "status": {
+            "status": "OK",
+            "currency": "EUR",
+            "maskedCardNumber": "440577******5558",
+        },
+    }
+
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.ok = True
+    mock_response.json.return_value = mocked_status_response
+
+    mock_request.return_value = mock_response
+
+    response = tatrapay_client.get_payment_status("123")
+
+    assert response["simple_status"] == SimpleStatus.ACCEPTED
+    assert response["saved_card"]["creditCard"] == "Visa"

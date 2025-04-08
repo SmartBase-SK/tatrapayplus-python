@@ -10,3 +10,9 @@ class Urls:
     STATUS = "/status"
     APPEARANCES = "/v1/appearances"
     APPEARANCE_LOGO = APPEARANCES + "/logo"
+
+
+class SimpleStatus:
+    ACCEPTED = "ACCEPTED"
+    PENDING = "PENDING"
+    REJECTED = "REJECTED"
