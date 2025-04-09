@@ -96,10 +96,13 @@ class TatrapayPlusClient:
             logging.error("Error response:", response.text)
 
     def create_payment(
-        self, request: InitiatePaymentRequest
+        self, request: InitiatePaymentRequest, language: str = 'sk', preferred_method: str = None
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
+        self.session.headers["Accept-Language"] = language.lower()
+        if preferred_method:
+            self.session.headers["Preferred-Method"] = preferred_method
 
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         if cleaned_request.get("cardDetail", {}).get("cardHolder"):
