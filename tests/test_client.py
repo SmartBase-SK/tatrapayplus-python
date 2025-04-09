@@ -10,7 +10,6 @@ from tatrapayplus.models.amount import Amount
 from tatrapayplus.models.bank_transfer import BankTransfer
 from tatrapayplus.models.base_payment import BasePayment
 from tatrapayplus.models.initiate_payment_request import InitiatePaymentRequest
-from tatrapayplus.types import Unset
 
 
 @pytest.fixture
@@ -56,23 +55,22 @@ def test_create_full_payment(tatrapay_client):
             order=Order(
                 order_no="ORDER123456",
                 order_items=[
-                        OrderItem(
-                            quantity=1,
-                            total_item_price=10.0,
-                            item_detail=ItemDetail(
-                                item_detail_sk=ItemDetailLangUnit(
-                                    item_name="Testovací produkt",
-                                    item_description="Popis produktu",
-                                ),
-                                item_detail_en=ItemDetailLangUnit(
-                                    item_name="Test Product",
-                                    item_description="Product description",
-                                ),
+                    OrderItem(
+                        quantity=1,
+                        total_item_price=10.0,
+                        item_detail=ItemDetail(
+                            item_detail_sk=ItemDetailLangUnit(
+                                item_name="Testovací produkt",
+                                item_description="Popis produktu",
                             ),
-                            item_info_url="https://tatrabanka.sk",
-                        )
-                    ],
-
+                            item_detail_en=ItemDetailLangUnit(
+                                item_name="Test Product",
+                                item_description="Product description",
+                            ),
+                        ),
+                        item_info_url="https://tatrabanka.sk",
+                    )
+                ],
                 preferred_loan_duration=12,
                 down_payment=1.0,
             ),
@@ -100,81 +98,74 @@ def test_create_full_payment(tatrapay_client):
                 post_code="81101",
                 country="SK",
             ),
-            comfort_pay=RegisterForComfortPayObj(
-                    register_for_comfort_pay=True
-
-            ),
+            comfort_pay=RegisterForComfortPayObj(register_for_comfort_pay=True),
         ),
         user_data=UserData(
             first_name="Janko",
             last_name="Hruska",
             email="janko.hruska@example.com",
-        )
+        ),
     )
 
     payment_response = tatrapay_client.create_payment(payment_data)
 
     assert payment_response.payment_id is not None
 
-#
-# def test_create_direct_payment(tatrapay_client):
-#     payment_data = InitiateDirectTransactionRequest(
-#         amount=Amount(
-#             amountValue=30.0,
-#             currency="EUR",
-#         ),
-#         endToEnd=E2e(
-#             __root__=PaymentSymbols(
-#                 variableSymbol=VariableSymbol(__root__="123456"),
-#                 specificSymbol=SpecificSymbol(__root__="0244763"),
-#                 constantSymbol=ConstantSymbol(__root__="389"),
-#             )
-#         ),
-#         isPreAuthorization=True,
-#         tdsData=DirectTransactionTDSData(
-#             cardHolder=CardHolder(__root__="Janko Hruska"),
-#             email=Email(__root__="janko.hruska@example.com"),
-#             phone=Phone(__root__="+421900000000"),
-#             billingAddress=Address(
-#                 streetName="Ulica",
-#                 buildingNumber="35",
-#                 townName="Bratislava",
-#                 postCode="81101",
-#                 country=CountryCode(__root__="SK"),
-#             ),
-#             shippingAddress=Address(
-#                 streetName="Ulica",
-#                 buildingNumber="35",
-#                 townName="Bratislava",
-#                 postCode="81101",
-#                 country=CountryCode(__root__="SK"),
-#             ),
-#         ),
-#         ipspData=DirectTransactionIPSPData(
-#             subMerchantId="5846864684",
-#             name="Test Predajca",
-#             location="Bratislava",
-#             country=CountryCode(__root__="SK"),
-#         ),
-#         token=Token(
-#             __root__=ApplePayToken(
-#                 token=Token1(
-#                     header=Header(
-#                         ephemeralPublicKey="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELAfD ie0Ie1TxCcrFt69BzcQ52+F+Fhm5mDw6pMR54AzoFMgdGPRbqoLtFpoSe0FI/m0cqRMOVM2W4Bz9jVZZHA==",
-#                         publicKeyHash="LjAAyv6vb6jOEkjfG7L1a5OR2uCTHIkB61DaYdEWD",
-#                         transactionId="0c4352c073ad460044517596dbbf8fe503a837138c8c2de18fddb37ca3ec5295",
-#                     ),
-#                     data="M8i9PNK4yXtKO3xmOn6uyYOWmQ+iX9/Oc0EWHJZnPZ/IAEe2UYNCfely3dgq3veEygmQcl0s8lvMeCIZAbbBvbZW...",
-#                     signature="bNEa18hOrgG/oFk/o0CtYR01vhm+34RbStas1T+tkFLpP0eG5A+...",
-#                     version="EC_v1",
-#                 )
-#             )
-#         ),
-#     )
-#
-#     payment_response = tatrapay_client.create_payment_direct(payment_data)
-#
-#     assert payment_response.paymentId.__root__ is not None
+
+def test_create_direct_payment(tatrapay_client):
+    payment_data = InitiateDirectTransactionRequest(
+        amount=Amount(
+            amount_value=30.0,
+            currency="EUR",
+        ),
+        end_to_end=PaymentSymbols(
+            variable_symbol="123456",
+            specific_symbol="0244763",
+            constant_symbol="389",
+        ),
+        is_pre_authorization=True,
+        tds_data=DirectTransactionTDSData(
+            card_holder="Janko Hruska",
+            email="janko.hruska@example.com",
+            phone="+421900000000",
+            billing_address=Address(
+                street_name="Ulica",
+                building_number="35",
+                town_name="Bratislava",
+                post_code="81101",
+                country="SK",
+            ),
+            shipping_address=Address(
+                street_name="Ulica",
+                building_number="35",
+                town_name="Bratislava",
+                post_code="81101",
+                country="SK",
+            ),
+        ),
+        ipsp_data=DirectTransactionIPSPData(
+            sub_merchant_id="5846864684",
+            name="Test Predajca",
+            location="Bratislava",
+            country="SK",
+        ),
+        token=ApplePayToken(
+            token=ApplePayTokenToken(
+                header=ApplePayTokenTokenHeader(
+                    ephemeral_public_key="MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAELAfD...",
+                    public_key_hash="LjAAyv6vb6jOEkjfG7L1a5OR2uCTHIkB61DaYdEWD",
+                    transaction_id="0c4352c073ad460044517596dbbf8fe503a837138c8c2de18fddb37ca3ec5295",
+                ),
+                data="M8i9PNK4yXtKO3xmOn6uyYOWmQ+iX9...",
+                signature="bNEa18hOrgG/oFk/o0CtYR01vhm+34RbStas1T+tkFLpP0eG5A+...",
+                version="EC_v1",
+            )
+        ),
+    )
+
+    payment_response = tatrapay_client.create_payment_direct(payment_data)
+
+    assert payment_response.payment_id is not None
 
 
 def test_get_payment_methods(tatrapay_client):
@@ -196,7 +187,7 @@ def test_get_available_payment_methods(tatrapay_client):
 
 def test_cancel_payment(tatrapay_client):
     cancel_payment_response = tatrapay_client.cancel_payment(
-        tatrapay_client.create_payment(get_minimal_payment_data()).paymentId.__root__
+        tatrapay_client.create_payment(get_minimal_payment_data()).payment_id
     )
     assert cancel_payment_response.ok
 
@@ -210,7 +201,7 @@ def test_update_payment_mocked(mock_request, tatrapay_client):
     mock_request.return_value = mock_response
 
     update_data = CardPayUpdateInstruction(
-        operationType=CardPayUpdateInstructionOperationType.CHARGEBACK,
+        operation_type=CardPayUpdateInstructionOperationType.CHARGEBACK,
         amount=120,
     )
     payment_update_response = tatrapay_client.update_payment("123", update_data)
@@ -219,17 +210,17 @@ def test_update_payment_mocked(mock_request, tatrapay_client):
 
 def test_get_payment_status(tatrapay_client):
     payment_status = tatrapay_client.get_payment_status(
-        tatrapay_client.create_payment(get_minimal_payment_data()).paymentId.__root__
+        tatrapay_client.create_payment(get_minimal_payment_data()).payment_id
     )
     assert payment_status is not None
 
 
 def test_set_appearance(tatrapay_client):
     appearance_data = AppearanceRequest(
-        theme="SYSTEM",
-        surfaceAccent=ColorAttribute(colorDarkMode="#fff", colorLightMode="#fff"),
-        tintAccent=ColorAttribute(colorDarkMode="#fff", colorLightMode="#fff"),
-        tintOnAccent=ColorAttribute(colorDarkMode="#fff", colorLightMode="#fff"),
+        theme=AppearanceRequestTheme.SYSTEM,
+        surface_accent=ColorAttribute(color_dark_mode="#fff", color_light_mode="#fff"),
+        tint_accent=ColorAttribute(color_dark_mode="#fff", color_light_mode="#fff"),
+        tint_on_accent=ColorAttribute(color_dark_mode="#fff", color_light_mode="#fff"),
     )
     response = tatrapay_client.set_appearance(appearance_data)
     assert response.ok
@@ -244,7 +235,7 @@ def test_set_appearance_logo_mocked(mock_request, tatrapay_client):
     mock_request.return_value = mock_response
 
     logo_data = AppearanceLogoRequest(
-        logoImage="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
+        logo_image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",
     )
 
     response = tatrapay_client.set_appearance_logo(logo_data)

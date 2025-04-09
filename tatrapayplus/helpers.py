@@ -100,12 +100,12 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
         return SimpleStatus.PENDING
 
     if plain_status in payment_method_statuses.get(
-        payment_status.selectedPaymentMethod, {}
+        payment_status.selected_payment_method, {}
     ).get("accepted", []):
         return SimpleStatus.ACCEPTED
 
     if plain_status in payment_method_statuses.get(
-        payment_status.selectedPaymentMethod, {}
+        payment_status.selected_payment_method, {}
     ).get("rejected", []):
         return SimpleStatus.REJECTED
 
@@ -114,15 +114,15 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
 
 def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
     if (
-        payment_status.selectedPaymentMethod != PaymentMethod.CARD_PAY
+        payment_status.selected_payment_method != PaymentMethod.CARD_PAY
         or not isinstance(payment_status.status, CardPayStatusStructure)
     ):
         return {}
 
-    comfort_pay = payment_status.status.comfortPay
+    comfort_pay = payment_status.status.comfort_pay
     masked = (
-        payment_status.status.maskedCardNumber.__root__
-        if payment_status.status.maskedCardNumber
+        payment_status.status.masked_card_number
+        if payment_status.status.masked_card_number
         else None
     )
     card_type = None
@@ -136,6 +136,6 @@ def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
     }
 
     if comfort_pay and comfort_pay.status == ComfortPayStatus.OK and comfort_pay.cid:
-        saved_card_data["cid"] = comfort_pay.cid.__root__
+        saved_card_data["cid"] = comfort_pay.cid
 
     return saved_card_data
