@@ -24,5 +24,5 @@ deploy:
     secure: PLEASE_REPLACE_ME
   on:
     tags: true
-    repo: SmartBase-SK/tatrapayplus_python
+    repo: SmartBase-SK/tatrapayplus-python
     python: 3.8
