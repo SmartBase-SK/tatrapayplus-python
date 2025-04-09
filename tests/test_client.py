@@ -125,7 +125,7 @@ def test_create_direct_payment(tatrapay_client):
         ),
         is_pre_authorization=True,
         tds_data=DirectTransactionTDSData(
-            card_holder="Janko Hruska",
+            card_holder="Janko Hruška",
             email="janko.hruska@example.com",
             phone="+421900000000",
             billing_address=Address(

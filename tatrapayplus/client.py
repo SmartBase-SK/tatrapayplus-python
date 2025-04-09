@@ -119,7 +119,16 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.DIRECT_PAYMENT}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
 
-        response = self.session.post(url, json=request.to_dict())
+        cleaned_request = remove_special_characters_from_strings(request.to_dict())
+
+        if cleaned_request.get("tdsData", {}).get("cardHolder"):
+            cleaned_request["tdsData"]["cardHolder"] = (
+                trim_and_remove_special_characters(
+                    remove_diacritics(cleaned_request["tdsData"]["cardHolder"])
+                )
+            )
+
+        response = self.session.post(url, json=cleaned_request)
         self.check_response(response)
 
         return InitiateDirectTransactionResponse.from_dict(response.json())
