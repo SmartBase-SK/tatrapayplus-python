@@ -136,8 +136,8 @@ def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
         card_type = identify_card_type(masked)
 
     saved_card_data = {
-        "maskedCardNumber": masked,
-        "creditCard": card_type,
+        "masked_card_number": masked,
+        "credit_card": card_type,
     }
 
     if comfort_pay and comfort_pay.status == ComfortPayStatus.OK and comfort_pay.cid:
