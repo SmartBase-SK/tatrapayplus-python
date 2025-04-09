@@ -29,8 +29,6 @@ dependencies = [
     "tox-uv>=1.11.3",
     "mypy>=0.991",
     "ruff>=0.9.2",
-    "pydantic<2.0",
-    "pydantic[email]",
     "openapi-python-client",
 ]
 
