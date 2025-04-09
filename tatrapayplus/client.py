@@ -3,14 +3,36 @@ import socket
 import time
 import uuid
 from builtins import str
+from typing import Optional, List
 
 import requests
 from requests import Response
 
 from tatrapayplus import enums
 from tatrapayplus.enums import Urls
-from tatrapayplus.helpers import get_simple_status, get_saved_card_data
-from tatrapayplus.models import *
+from tatrapayplus.helpers import (
+    get_simple_status,
+    get_saved_card_data,
+    remove_special_characters_from_strings,
+    trim_and_remove_special_characters,
+    remove_diacritics,
+)
+from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
+from tatrapayplus.models.appearance_request import AppearanceRequest
+from tatrapayplus.models.card_pay_update_instruction import CardPayUpdateInstruction
+from tatrapayplus.models.initiate_direct_transaction_request import (
+    InitiateDirectTransactionRequest,
+)
+from tatrapayplus.models.initiate_direct_transaction_response import (
+    InitiateDirectTransactionResponse,
+)
+from tatrapayplus.models.initiate_payment_request import InitiatePaymentRequest
+from tatrapayplus.models.initiate_payment_response import InitiatePaymentResponse
+from tatrapayplus.models.payment_intent_status_response import (
+    PaymentIntentStatusResponse,
+)
+from tatrapayplus.models.payment_method_rules import PaymentMethodRules
+from tatrapayplus.models.payment_methods_list_response import PaymentMethodsListResponse
 
 
 class TatrapayPlusToken:
@@ -79,10 +101,17 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
 
-        response = self.session.post(url, data=request.json(exclude_none=True))
+        cleaned_request = remove_special_characters_from_strings(request.to_dict())
+        if cleaned_request.get("cardDetail", {}).get("cardHolder"):
+            cleaned_request["cardDetail"]["cardHolder"] = (
+                trim_and_remove_special_characters(
+                    remove_diacritics(cleaned_request["cardDetail"]["cardHolder"])
+                )
+            )
+        response = self.session.post(url, json=cleaned_request)
         self.check_response(response)
 
-        return InitiatePaymentResponse.parse_obj(response.json())
+        return InitiatePaymentResponse.from_dict(response.json())
 
     def create_payment_direct(
         self, request: InitiateDirectTransactionRequest
@@ -90,10 +119,19 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.DIRECT_PAYMENT}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
 
-        response = self.session.post(url, data=request.json(exclude_none=True))
+        cleaned_request = remove_special_characters_from_strings(request.to_dict())
+
+        if cleaned_request.get("tdsData", {}).get("cardHolder"):
+            cleaned_request["tdsData"]["cardHolder"] = (
+                trim_and_remove_special_characters(
+                    remove_diacritics(cleaned_request["tdsData"]["cardHolder"])
+                )
+            )
+
+        response = self.session.post(url, json=cleaned_request)
         self.check_response(response)
 
-        return InitiateDirectTransactionResponse.parse_obj(response.json())
+        return InitiateDirectTransactionResponse.from_dict(response.json())
 
     def get_payment_methods(self) -> PaymentMethodsListResponse:
         url = f"{self.base_url}{Urls.PAYMENT_METHODS}"
@@ -101,14 +139,14 @@ class TatrapayPlusClient:
         response = self.session.get(url)
         self.check_response(response)
 
-        return PaymentMethodsListResponse.parse_obj(response.json())
+        return PaymentMethodsListResponse.from_dict(response.json())
 
     def get_payment_status(self, payment_id) -> dict:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}{Urls.STATUS}"
 
         response = self.session.get(url)
         self.check_response(response)
-        status = PaymentIntentStatusResponse.parse_obj(response.json())
+        status = PaymentIntentStatusResponse.from_dict(response.json())
         return {
             "status": status,
             "simple_status": get_simple_status(status),
@@ -118,7 +156,7 @@ class TatrapayPlusClient:
     def update_payment(self, payment_id, request: CardPayUpdateInstruction) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
         self.session.headers["Idempotency-Key"] = self.session.headers["X-Request-ID"]
-        response = self.session.patch(url, data=request.json(exclude_none=True))
+        response = self.session.patch(url, json=request.to_dict())
         self.check_response(response)
 
         return response
@@ -137,26 +175,25 @@ class TatrapayPlusClient:
         total_amount: Optional[float] = None,
     ) -> List[PaymentMethodRules]:
         response = self.get_payment_methods()
-        all_methods = response.paymentMethods.__root__
+        all_methods = response.payment_methods
 
         available_methods = []
 
         for method in all_methods:
-            if currency_code and method.supportedCurrency:
-                supported = [c.__root__ for c in method.supportedCurrency.__root__]
+            if currency_code and method.supported_currency:
+                supported = [c for c in method.supported_currency]
                 if currency_code not in supported:
                     continue
 
-            if total_amount is not None and method.amountRangeRule:
-                min_amount = method.amountRangeRule.minAmount or 0
-                max_amount = method.amountRangeRule.maxAmount or float("inf")
+            if total_amount is not None and method.amount_range_rule:
+                min_amount = method.amount_range_rule.min_amount or 0
+                max_amount = method.amount_range_rule.max_amount or float("inf")
                 if not (min_amount <= total_amount <= max_amount):
                     continue
 
-            if country_code and method.supportedCountry:
+            if country_code and method.supported_country:
                 supported = [
-                    supported_country.__root__
-                    for supported_country in method.supportedCountry.__root__
+                    supported_country for supported_country in method.supported_country
                 ]
                 if country_code not in supported:
                     continue
@@ -167,14 +204,14 @@ class TatrapayPlusClient:
 
     def set_appearance(self, request: AppearanceRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCES}"
-        response = self.session.post(url, data=request.json(exclude_none=True))
+        response = self.session.post(url, json=request.to_dict())
         self.check_response(response)
 
         return response
 
     def set_appearance_logo(self, request: AppearanceLogoRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
-        response = self.session.post(url, data=request.json(exclude_none=True))
+        response = self.session.post(url, json=request.to_dict())
         self.check_response(response)
 
         return response

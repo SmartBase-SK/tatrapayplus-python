@@ -1,15 +1,16 @@
 from tatrapayplus.enums import SimpleStatus
-from tatrapayplus.models import (
+from tatrapayplus.models.bank_transfer_status import BankTransferStatus
+from tatrapayplus.models.card_pay_status import CardPayStatus
+from tatrapayplus.models.card_pay_status_structure import CardPayStatusStructure
+from tatrapayplus.models.comfort_pay_status import ComfortPayStatus
+from tatrapayplus.models.pay_later_status import PayLaterStatus
+from tatrapayplus.models.payment_intent_status_response import (
     PaymentIntentStatusResponse,
-    CardPayStatusStructure,
-    ComfortPayStatus,
 )
-from tatrapayplus.models import (
-    PaymentMethod,
-    CardPayStatus,
-    BankTransferStatus,
-    PayLaterStatus,
-)
+from tatrapayplus.models.payment_method import PaymentMethod
+import re
+import unicodedata
+from typing import Any
 
 AMEX = "AMEX"
 DISCOVER = "Discover"
@@ -104,12 +105,12 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
         return SimpleStatus.PENDING
 
     if plain_status in payment_method_statuses.get(
-        payment_status.selectedPaymentMethod, {}
+        payment_status.selected_payment_method, {}
     ).get("accepted", []):
         return SimpleStatus.ACCEPTED
 
     if plain_status in payment_method_statuses.get(
-        payment_status.selectedPaymentMethod, {}
+        payment_status.selected_payment_method, {}
     ).get("rejected", []):
         return SimpleStatus.REJECTED
 
@@ -118,15 +119,15 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
 
 def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
     if (
-        payment_status.selectedPaymentMethod != PaymentMethod.CARD_PAY
+        payment_status.selected_payment_method != PaymentMethod.CARD_PAY
         or not isinstance(payment_status.status, CardPayStatusStructure)
     ):
         return {}
 
-    comfort_pay = payment_status.status.comfortPay
+    comfort_pay = payment_status.status.comfort_pay
     masked = (
-        payment_status.status.maskedCardNumber.__root__
-        if payment_status.status.maskedCardNumber
+        payment_status.status.masked_card_number
+        if payment_status.status.masked_card_number
         else None
     )
     card_type = None
@@ -140,6 +141,31 @@ def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
     }
 
     if comfort_pay and comfort_pay.status == ComfortPayStatus.OK and comfort_pay.cid:
-        saved_card_data["cid"] = comfort_pay.cid.__root__
+        saved_card_data["cid"] = comfort_pay.cid
 
     return saved_card_data
+
+
+def remove_diacritics(s: str) -> str:
+    s = unicodedata.normalize("NFD", s)
+    s = re.sub(r"[\u0300-\u036f]", "", s)
+    s = re.sub(r"[^0-9a-zA-Z.@_ \-]", "", s)  # matches [^0-9a-zA-Z.@_ -]
+    return s
+
+
+def trim_and_remove_special_characters(s: str) -> str:
+    s = re.sub(r"[<>|`\\]", " ", s)
+    return s.strip()
+
+
+def remove_special_characters_from_strings(obj: Any) -> Any:
+    if isinstance(obj, str):
+        return trim_and_remove_special_characters(obj)
+    elif isinstance(obj, list):
+        return [remove_special_characters_from_strings(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {
+            key: remove_special_characters_from_strings(value)
+            for key, value in obj.items()
+        }
+    return obj
