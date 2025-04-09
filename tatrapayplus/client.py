@@ -10,8 +10,13 @@ from requests import Response
 
 from tatrapayplus import enums
 from tatrapayplus.enums import Urls
-from tatrapayplus.helpers import get_simple_status, get_saved_card_data
-from tatrapayplus.models import *
+from tatrapayplus.helpers import (
+    get_simple_status,
+    get_saved_card_data,
+    remove_special_characters_from_strings,
+    trim_and_remove_special_characters,
+    remove_diacritics,
+)
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
 from tatrapayplus.models.card_pay_update_instruction import CardPayUpdateInstruction
@@ -96,7 +101,14 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
 
-        response = self.session.post(url, json=request.to_dict())
+        cleaned_request = remove_special_characters_from_strings(request.to_dict())
+        if cleaned_request.get("cardDetail", {}).get("cardHolder"):
+            cleaned_request["cardDetail"]["cardHolder"] = (
+                trim_and_remove_special_characters(
+                    remove_diacritics(cleaned_request["cardDetail"]["cardHolder"])
+                )
+            )
+        response = self.session.post(url, json=cleaned_request)
         self.check_response(response)
 
         return InitiatePaymentResponse.from_dict(response.json())

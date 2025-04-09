@@ -83,9 +83,9 @@ def test_create_full_payment(tatrapay_client):
         card_detail=CardDetail(
             card_pay_lang_override=CardDetailCardPayLangOverride.SK,
             is_pre_authorization=True,
-            card_holder="Janko Hruska",
+            card_holder="Janko Hruška",
             billing_address=Address(
-                street_name="Hlavna Ulica",
+                street_name="Hlavná Ulica",
                 building_number="123",
                 town_name="Bratislava",
                 post_code="81101",

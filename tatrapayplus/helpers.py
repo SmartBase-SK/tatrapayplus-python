@@ -4,8 +4,13 @@ from tatrapayplus.models.card_pay_status import CardPayStatus
 from tatrapayplus.models.card_pay_status_structure import CardPayStatusStructure
 from tatrapayplus.models.comfort_pay_status import ComfortPayStatus
 from tatrapayplus.models.pay_later_status import PayLaterStatus
-from tatrapayplus.models.payment_intent_status_response import PaymentIntentStatusResponse
+from tatrapayplus.models.payment_intent_status_response import (
+    PaymentIntentStatusResponse,
+)
 from tatrapayplus.models.payment_method import PaymentMethod
+import re
+import unicodedata
+from typing import Any
 
 AMEX = "AMEX"
 DISCOVER = "Discover"
@@ -139,3 +144,28 @@ def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict:
         saved_card_data["cid"] = comfort_pay.cid
 
     return saved_card_data
+
+
+def remove_diacritics(s: str) -> str:
+    s = unicodedata.normalize("NFD", s)
+    s = re.sub(r"[\u0300-\u036f]", "", s)
+    s = re.sub(r"[^0-9a-zA-Z.@_ \-]", "", s)  # matches [^0-9a-zA-Z.@_ -]
+    return s
+
+
+def trim_and_remove_special_characters(s: str) -> str:
+    s = re.sub(r"[<>|`\\]", " ", s)
+    return s.strip()
+
+
+def remove_special_characters_from_strings(obj: Any) -> Any:
+    if isinstance(obj, str):
+        return trim_and_remove_special_characters(obj)
+    elif isinstance(obj, list):
+        return [remove_special_characters_from_strings(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {
+            key: remove_special_characters_from_strings(value)
+            for key, value in obj.items()
+        }
+    return obj
