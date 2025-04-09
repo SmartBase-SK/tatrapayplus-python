@@ -4,7 +4,12 @@ import time
 import uuid
 from builtins import str
 from typing import Optional, List
-
+from pathlib import Path
+from base64 import b64encode
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.backends import default_backend
 import requests
 from requests import Response
 
@@ -96,7 +101,10 @@ class TatrapayPlusClient:
             logging.error("Error response:", response.text)
 
     def create_payment(
-        self, request: InitiatePaymentRequest, language: str = 'sk', preferred_method: str = None
+        self,
+        request: InitiatePaymentRequest,
+        language: str = "sk",
+        preferred_method: str = None,
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = self.redirect_uri
@@ -218,3 +226,41 @@ class TatrapayPlusClient:
         self.check_response(response)
 
         return response
+
+    def generate_signed_card_id_from_cid(
+        cid: str, public_key_content: str | None = None
+    ) -> str | None:
+        if public_key_content is None:
+            try:
+                public_key_path = (
+                    Path(__file__).parent / "../ECID_PUBLIC_KEY_2023.txt"
+                )
+                public_key_content = public_key_path.read_text(encoding="utf-8")
+            except Exception as e:
+                print("Error reading public key file:", e)
+                return None
+
+        try:
+            public_key = serialization.load_pem_public_key(
+                public_key_content.encode("utf-8"), backend=default_backend()
+            )
+
+            encrypted = public_key.encrypt(
+                cid.encode("utf-8"),
+                padding.OAEP(
+                    mgf=padding.MGF1(
+                        algorithm=hashes.SHA1()
+                    ),
+                    algorithm=hashes.SHA1(),
+                    label=None,
+                ),
+            )
+
+            base64_encoded = b64encode(encrypted).decode("utf-8")
+            return "\n".join(
+                base64_encoded[i : i + 64] for i in range(0, len(base64_encoded), 64)
+            )
+
+        except Exception as e:
+            print("Encryption error:", e)
+            return None
