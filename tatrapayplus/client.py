@@ -70,7 +70,7 @@ class TatrapayPlusClient:
         self.session = requests.Session()
         self.session.headers = self.get_headers()
 
-    def authenticate(self):
+    def get_access_token(self) -> TatrapayPlusToken:
         token_url = f"{self.base_url}{Urls.TOKEN}"
         payload = {
             "grant_type": "client_credentials",
@@ -81,13 +81,13 @@ class TatrapayPlusClient:
         }
         response = requests.post(token_url, data=payload)
         response.raise_for_status()
-        self.token = TatrapayPlusToken(
+        return TatrapayPlusToken(
             response.json().get("access_token"), response.json().get("expires_in")
         )
 
     def get_headers(self):
         if not self.token or self.token.is_expired():
-            self.authenticate()
+            self.token = self.get_access_token()
         return {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
