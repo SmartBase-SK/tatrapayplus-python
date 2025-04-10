@@ -191,7 +191,7 @@ class TatrapayPlusLogger:
 
     def _mask_body(self, body):
         if isinstance(body, bytes):
-            body = body.decode("utf-8", errors="ignore")
+            body = json.loads(body.decode("utf-8"))
 
         if isinstance(body, str):
             try:
