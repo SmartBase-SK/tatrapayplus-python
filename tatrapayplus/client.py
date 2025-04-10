@@ -1,16 +1,16 @@
-import logging
 import socket
 import time
 import uuid
-from builtins import str
-from typing import Optional, List
-from pathlib import Path
 from base64 import b64encode
+from builtins import str
+from pathlib import Path
+from typing import Optional, List
+
+import requests
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.backends import default_backend
-import requests
 from requests import Response
 
 from tatrapayplus import enums
@@ -21,6 +21,7 @@ from tatrapayplus.helpers import (
     remove_special_characters_from_strings,
     trim_and_remove_special_characters,
     remove_diacritics,
+    TatrapayPlusLogger,
 )
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
@@ -60,7 +61,9 @@ class TatrapayPlusClient:
         client_secret: str,
         redirect_uri: str,
         scope: enums.Scope = enums.Scope.TATRAPAYPLUS,
+        logger: TatrapayPlusLogger = None,
     ):
+        self.logger = logger
         self.base_url = base_url
         self.client_id = client_id
         self.client_secret = client_secret
@@ -80,6 +83,7 @@ class TatrapayPlusClient:
             "scope": self.scope,
         }
         response = requests.post(token_url, data=payload)
+        self.log(response)
         response.raise_for_status()
         return TatrapayPlusToken(
             response.json().get("access_token"), response.json().get("expires_in")
@@ -94,11 +98,6 @@ class TatrapayPlusClient:
             "X-Request-ID": str(uuid.uuid4()),
             "IP-Address": str(socket.gethostbyname(socket.gethostname())),
         }
-
-    @staticmethod
-    def check_response(response):
-        if not response.ok:
-            logging.error("Error response:", response.text)
 
     def create_payment(
         self,
@@ -120,7 +119,7 @@ class TatrapayPlusClient:
                 )
             )
         response = self.session.post(url, json=cleaned_request)
-        self.check_response(response)
+        self.log(response)
 
         return InitiatePaymentResponse.from_dict(response.json())
 
@@ -140,7 +139,7 @@ class TatrapayPlusClient:
             )
 
         response = self.session.post(url, json=cleaned_request)
-        self.check_response(response)
+        self.log(response)
 
         return InitiateDirectTransactionResponse.from_dict(response.json())
 
@@ -148,7 +147,7 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.PAYMENT_METHODS}"
 
         response = self.session.get(url)
-        self.check_response(response)
+        self.log(response)
 
         return PaymentMethodsListResponse.from_dict(response.json())
 
@@ -156,7 +155,7 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}{Urls.STATUS}"
 
         response = self.session.get(url)
-        self.check_response(response)
+        self.log(response)
         status = PaymentIntentStatusResponse.from_dict(response.json())
         return {
             "status": status,
@@ -168,14 +167,14 @@ class TatrapayPlusClient:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
         self.session.headers["Idempotency-Key"] = self.session.headers["X-Request-ID"]
         response = self.session.patch(url, json=request.to_dict())
-        self.check_response(response)
+        self.log(response)
 
         return response
 
     def cancel_payment(self, payment_id) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
         response = self.session.delete(url)
-        self.check_response(response)
+        self.log(response)
 
         return response
 
@@ -216,15 +215,14 @@ class TatrapayPlusClient:
     def set_appearance(self, request: AppearanceRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCES}"
         response = self.session.post(url, json=request.to_dict())
-        self.check_response(response)
+        self.log(response)
 
         return response
 
     def set_appearance_logo(self, request: AppearanceLogoRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
         response = self.session.post(url, json=request.to_dict())
-        self.check_response(response)
-
+        self.log(response)
         return response
 
     def generate_signed_card_id_from_cid(
@@ -232,9 +230,7 @@ class TatrapayPlusClient:
     ) -> str | None:
         if public_key_content is None:
             try:
-                public_key_path = (
-                    Path(__file__).parent / "../ECID_PUBLIC_KEY_2023.txt"
-                )
+                public_key_path = Path(__file__).parent / "../ECID_PUBLIC_KEY_2023.txt"
                 public_key_content = public_key_path.read_text(encoding="utf-8")
             except Exception as e:
                 print("Error reading public key file:", e)
@@ -248,9 +244,7 @@ class TatrapayPlusClient:
             encrypted = public_key.encrypt(
                 cid.encode("utf-8"),
                 padding.OAEP(
-                    mgf=padding.MGF1(
-                        algorithm=hashes.SHA1()
-                    ),
+                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
                     algorithm=hashes.SHA1(),
                     label=None,
                 ),
@@ -264,3 +258,7 @@ class TatrapayPlusClient:
         except Exception as e:
             print("Encryption error:", e)
             return None
+
+    def log(self, response):
+        if self.logger:
+            self.logger.log(response)

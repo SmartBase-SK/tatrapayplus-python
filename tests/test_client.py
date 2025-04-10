@@ -5,11 +5,17 @@ import pytest
 
 from tatrapayplus.client import TatrapayPlusClient
 from tatrapayplus.enums import SimpleStatus
+from tatrapayplus.helpers import TatrapayPlusLogger
 from tatrapayplus.models import *
 from tatrapayplus.models.amount import Amount
 from tatrapayplus.models.bank_transfer import BankTransfer
 from tatrapayplus.models.base_payment import BasePayment
 from tatrapayplus.models.initiate_payment_request import InitiatePaymentRequest
+
+
+class TestLogger(TatrapayPlusLogger):
+    def write_line(self, line):
+        print(line)
 
 
 @pytest.fixture
@@ -19,6 +25,7 @@ def tatrapay_client():
         os.environ["TATRAPAY_CLIENT_ID"],
         os.environ["TATRAPAY_CLIENT_SECRET"],
         "https://tatrabanka.sk/",
+        logger=TestLogger(),
     )
 
 

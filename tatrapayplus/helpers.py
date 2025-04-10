@@ -1,3 +1,12 @@
+import json
+import re
+import unicodedata
+from datetime import datetime, timezone
+from typing import Any
+from urllib.parse import parse_qsl
+
+from requests import Response
+
 from tatrapayplus.enums import SimpleStatus
 from tatrapayplus.models.bank_transfer_status import BankTransferStatus
 from tatrapayplus.models.card_pay_status import CardPayStatus
@@ -8,9 +17,6 @@ from tatrapayplus.models.payment_intent_status_response import (
     PaymentIntentStatusResponse,
 )
 from tatrapayplus.models.payment_method import PaymentMethod
-import re
-import unicodedata
-from typing import Any
 
 AMEX = "AMEX"
 DISCOVER = "Discover"
@@ -169,3 +175,97 @@ def remove_special_characters_from_strings(obj: Any) -> Any:
             for key, value in obj.items()
         }
     return obj
+
+
+class TatrapayPlusLogger:
+    def __init__(self, mask_sensitive_data=True):
+        self.mask_sensitive_data = mask_sensitive_data
+        self.mask_body_fields = ["client_id", "client_secret", "access_token"]
+        self.mask_header_fields = ["Authorization"]
+
+    @staticmethod
+    def _mask_value(value: str, keep: int = 5) -> str:
+        if not isinstance(value, str) or len(value) <= keep * 2:
+            return "*" * len(value)
+        return value[:keep] + "*" * (len(value) - (keep * 2)) + value[-keep:]
+
+    def _mask_body(self, body):
+        if isinstance(body, bytes):
+            body = body.decode("utf-8", errors="ignore")
+
+        if isinstance(body, str):
+            try:
+                pairs = parse_qsl(body)  # List of tuples
+                masked_pairs = []
+                for key, value in pairs:
+                    if key in self.mask_body_fields:
+                        value = self._mask_value(value)
+                    masked_pairs.append(f"{key}={value}")
+                return "&".join(masked_pairs)
+            except Exception:
+                return body
+
+        elif isinstance(body, dict):
+            for key in self.mask_body_fields:
+                if key in body:
+                    body[key] = self._mask_value(body[key])
+            return json.dumps(body, indent=2, ensure_ascii=False)
+
+        return str(body)
+
+    def _mask_header(self, header):
+        masked = {}
+        for key, value in header.items():
+            if key in self.mask_header_fields:
+                masked[key] = self._mask_value(str(value))
+            else:
+                masked[key] = value
+        return masked
+
+    def log(self, response: Response):
+        now = datetime.now(timezone.utc)
+        readable_time = now.strftime("%Y-%m-%d %H:%M:%S")
+
+        request = response.request
+        request_data = (
+            self._mask_body(request.body)
+            if self.mask_sensitive_data and request.body
+            else request.body
+        )
+        headers = (
+            self._mask_header(request.headers)
+            if self.mask_sensitive_data and request.headers
+            else request.headers
+        )
+
+        self.write_line(f"INFO [{readable_time}] [INFO] Request:")
+        self.write_line(f"Method: {request.method}")
+        self.write_line(f"URL: {request.url}")
+        self.write_line("Headers:")
+        self.write_line(headers)
+        if request_data:
+            self.write_line("Body:")
+            self.write_line(request_data)
+        self.write_line("")
+
+        status = response.status_code
+        outcome = "success" if response.ok else "error"
+        self.write_line(
+            f"INFO [{readable_time}] [INFO] Response {outcome}(status: {status}):"
+        )
+        try:
+            response_body = response.json()
+            response_body_masked = (
+                self._mask_body(response_body)
+                if response_body and self.mask_body_fields
+                else response_body
+            )
+
+            self.write_line(response_body_masked)
+        except Exception:
+            self.write_line(response.text)
+
+    def write_line(self, line):
+        raise NotImplementedError(
+            "TatrapayPlusLogger subclass must implement write_line()"
+        )
