@@ -77,8 +77,9 @@ class TatrapayPlusClient:
         self.session = requests.Session()
         self.session.headers = self.get_headers()
 
-    def handle_response(self, response):
-        self.log(response)
+    def handle_response(self, response, loging=True):
+        if loging:
+            self.log(response)
         try:
             response.raise_for_status()
         except Exception:
@@ -173,14 +174,15 @@ class TatrapayPlusClient:
     def get_payment_status(self, payment_id) -> dict:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}{Urls.STATUS}"
 
-        response = self.handle_response(self.session.get(url))
+        response = self.handle_response(self.session.get(url), loging=False)
         status = PaymentIntentStatusResponse.from_dict(response.json())
-
-        return {
-            "status": status,
+        helpers = {
             "simple_status": get_simple_status(status),
             "saved_card": get_saved_card_data(status),
         }
+        response_data = {"status": status, **helpers}
+        self.log(response, helpers)
+        return response_data
 
     def update_payment(self, payment_id, request: CardPayUpdateInstruction) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
@@ -274,6 +276,6 @@ class TatrapayPlusClient:
             print("Encryption error:", e)
             return None
 
-    def log(self, response):
+    def log(self, response, additional_response_data=None):
         if self.logger:
-            self.logger.log(response)
+            self.logger.log(response, additional_response_data)

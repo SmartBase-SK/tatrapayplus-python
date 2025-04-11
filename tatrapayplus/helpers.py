@@ -222,7 +222,7 @@ class TatrapayPlusLogger:
                 masked[key] = value
         return masked
 
-    def log(self, response: Response):
+    def log(self, response: Response, additional_response_data: dict = None):
         now = datetime.now(timezone.utc)
         readable_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -232,6 +232,7 @@ class TatrapayPlusLogger:
             if self.mask_sensitive_data and request.body
             else request.body
         )
+
         headers = (
             self._mask_header(request.headers)
             if self.mask_sensitive_data and request.headers
@@ -255,6 +256,10 @@ class TatrapayPlusLogger:
         )
         try:
             response_body = response.json()
+
+            if isinstance(response_body, dict) and additional_response_data:
+                response_body.update(additional_response_data)
+
             response_body_masked = (
                 self._mask_body(response_body)
                 if response_body and self.mask_body_fields
