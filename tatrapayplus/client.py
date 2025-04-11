@@ -59,7 +59,6 @@ class TatrapayPlusClient:
         base_url: str,
         client_id: str,
         client_secret: str,
-        redirect_uri: str,
         scope: enums.Scope = enums.Scope.TATRAPAYPLUS,
         logger: TatrapayPlusLogger = None,
     ):
@@ -67,7 +66,6 @@ class TatrapayPlusClient:
         self.base_url = base_url
         self.client_id = client_id
         self.client_secret = client_secret
-        self.redirect_uri = redirect_uri
         self.scope = scope
         self.token: Optional[TatrapayPlusToken] = None
         self.session = requests.Session()
@@ -79,7 +77,6 @@ class TatrapayPlusClient:
             "grant_type": "client_credentials",
             "client_id": self.client_id,
             "client_secret": self.client_secret,
-            "redirect_uri": self.redirect_uri,
             "scope": self.scope,
         }
         response = requests.post(token_url, data=payload)
@@ -102,11 +99,12 @@ class TatrapayPlusClient:
     def create_payment(
         self,
         request: InitiatePaymentRequest,
+        redirect_uri: str,
         language: str = "sk",
         preferred_method: str = None,
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
-        self.session.headers["Redirect-URI"] = self.redirect_uri
+        self.session.headers["Redirect-URI"] = redirect_uri
         self.session.headers["Accept-Language"] = language.lower()
         if preferred_method:
             self.session.headers["Preferred-Method"] = preferred_method
@@ -124,10 +122,10 @@ class TatrapayPlusClient:
         return InitiatePaymentResponse.from_dict(response.json())
 
     def create_payment_direct(
-        self, request: InitiateDirectTransactionRequest
+        self, request: InitiateDirectTransactionRequest, redirect_uri: str
     ) -> InitiateDirectTransactionResponse:
         url = f"{self.base_url}{Urls.DIRECT_PAYMENT}"
-        self.session.headers["Redirect-URI"] = self.redirect_uri
+        self.session.headers["Redirect-URI"] = redirect_uri
 
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
 
