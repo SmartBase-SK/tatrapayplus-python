@@ -15,6 +15,7 @@ from requests import Response
 
 from tatrapayplus import enums
 from tatrapayplus.enums import Urls
+from tatrapayplus.errors import TatrapayPlusApiException
 from tatrapayplus.helpers import (
     get_simple_status,
     get_saved_card_data,
@@ -22,6 +23,11 @@ from tatrapayplus.helpers import (
     trim_and_remove_special_characters,
     remove_diacritics,
     TatrapayPlusLogger,
+)
+from tatrapayplus.models import (
+    GetAccessTokenResponse400,
+    Field40XErrorBody,
+    Field400ErrorBody,
 )
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
@@ -71,6 +77,21 @@ class TatrapayPlusClient:
         self.session = requests.Session()
         self.session.headers = self.get_headers()
 
+    def handle_response(self, response):
+        self.log(response)
+        try:
+            response.raise_for_status()
+        except Exception:
+            if Urls.TOKEN in response.url:
+                error_body = GetAccessTokenResponse400().from_dict(response.json())
+            elif response.status_code == 400:
+                error_body = Field400ErrorBody().from_dict(response.json())
+            else:
+                error_body = Field40XErrorBody().from_dict(response.json())
+
+            raise TatrapayPlusApiException(error_body)
+        return response
+
     def get_access_token(self) -> TatrapayPlusToken:
         token_url = f"{self.base_url}{Urls.TOKEN}"
         payload = {
@@ -79,9 +100,8 @@ class TatrapayPlusClient:
             "client_secret": self.client_secret,
             "scope": self.scope,
         }
-        response = requests.post(token_url, data=payload)
-        self.log(response)
-        response.raise_for_status()
+        response = self.handle_response(requests.post(token_url, data=payload))
+
         return TatrapayPlusToken(
             response.json().get("access_token"), response.json().get("expires_in")
         )
@@ -89,11 +109,15 @@ class TatrapayPlusClient:
     def get_headers(self):
         if not self.token or self.token.is_expired():
             self.token = self.get_access_token()
+        try:
+            ip_address = socket.gethostbyname(socket.gethostname())
+        except Exception:
+            ip_address = "127.0.0.1"
         return {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
             "X-Request-ID": str(uuid.uuid4()),
-            "IP-Address": str(socket.gethostbyname(socket.gethostname())),
+            "IP-Address": str(ip_address),
         }
 
     def create_payment(
@@ -116,8 +140,7 @@ class TatrapayPlusClient:
                     remove_diacritics(cleaned_request["cardDetail"]["cardHolder"])
                 )
             )
-        response = self.session.post(url, json=cleaned_request)
-        self.log(response)
+        response = self.handle_response(self.session.post(url, json=cleaned_request))
 
         return InitiatePaymentResponse.from_dict(response.json())
 
@@ -136,25 +159,23 @@ class TatrapayPlusClient:
                 )
             )
 
-        response = self.session.post(url, json=cleaned_request)
-        self.log(response)
+        response = self.handle_response(self.session.post(url, json=cleaned_request))
 
         return InitiateDirectTransactionResponse.from_dict(response.json())
 
     def get_payment_methods(self) -> PaymentMethodsListResponse:
         url = f"{self.base_url}{Urls.PAYMENT_METHODS}"
 
-        response = self.session.get(url)
-        self.log(response)
+        response = self.handle_response(self.session.get(url))
 
         return PaymentMethodsListResponse.from_dict(response.json())
 
     def get_payment_status(self, payment_id) -> dict:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}{Urls.STATUS}"
 
-        response = self.session.get(url)
-        self.log(response)
+        response = self.handle_response(self.session.get(url))
         status = PaymentIntentStatusResponse.from_dict(response.json())
+
         return {
             "status": status,
             "simple_status": get_simple_status(status),
@@ -164,15 +185,13 @@ class TatrapayPlusClient:
     def update_payment(self, payment_id, request: CardPayUpdateInstruction) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
         self.session.headers["Idempotency-Key"] = self.session.headers["X-Request-ID"]
-        response = self.session.patch(url, json=request.to_dict())
-        self.log(response)
+        response = self.handle_response(self.session.patch(url, json=request.to_dict()))
 
         return response
 
     def cancel_payment(self, payment_id) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
-        response = self.session.delete(url)
-        self.log(response)
+        response = self.handle_response(self.session.delete(url))
 
         return response
 
@@ -212,15 +231,13 @@ class TatrapayPlusClient:
 
     def set_appearance(self, request: AppearanceRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCES}"
-        response = self.session.post(url, json=request.to_dict())
-        self.log(response)
+        response = self.handle_response(self.session.post(url, json=request.to_dict()))
 
         return response
 
     def set_appearance_logo(self, request: AppearanceLogoRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
-        response = self.session.post(url, json=request.to_dict())
-        self.log(response)
+        response = self.handle_response(self.session.post(url, json=request.to_dict()))
         return response
 
     def generate_signed_card_id_from_cid(

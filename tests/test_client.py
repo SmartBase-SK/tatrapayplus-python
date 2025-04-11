@@ -5,6 +5,7 @@ import pytest
 
 from tatrapayplus.client import TatrapayPlusClient
 from tatrapayplus.enums import SimpleStatus
+from tatrapayplus.errors import TatrapayPlusApiException
 from tatrapayplus.helpers import TatrapayPlusLogger
 from tatrapayplus.models import *
 from tatrapayplus.models.amount import Amount
