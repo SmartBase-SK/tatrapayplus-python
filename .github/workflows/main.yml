@@ -27,6 +27,9 @@ jobs:
 
   tests-and-type-check:
     runs-on: ubuntu-latest
+    env:
+      TATRAPAY_CLIENT_ID: ${{ secrets.TATRAPAY_CLIENT_ID }}
+      TATRAPAY_CLIENT_SECRET: ${{ secrets.TATRAPAY_CLIENT_SECRET }}
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
@@ -36,7 +39,7 @@ jobs:
         shell: bash
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkoudfsfd4
 
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
