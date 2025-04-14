@@ -238,6 +238,7 @@ class TatrapayPlusClient:
         response = self.handle_response(self.session.post(url, json=request.to_dict()))
         return response
 
+    @staticmethod
     def generate_signed_card_id_from_cid(
         cid: str, public_key_content: str | None = None
     ) -> str | None:
