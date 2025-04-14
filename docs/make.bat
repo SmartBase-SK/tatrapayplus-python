@@ -9,7 +9,7 @@ if "%SPHINXBUILD%" == "" (
 )
 set SOURCEDIR=.
 set BUILDDIR=_build
-set SPHINXPROJ=tatrapayplus_python
+set SPHINXPROJ=tatrapayplus
 
 if "%1" == "" goto help
 

@@ -12,7 +12,7 @@ To install tatrapayplus-python, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install tatrapayplus_python
+    $ pip install tatrapayplus
 
 This is the preferred method to install tatrapayplus-python, as it will always install the most recent stable release.
 

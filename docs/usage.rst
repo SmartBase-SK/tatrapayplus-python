@@ -4,4 +4,4 @@ Usage
 
 To use tatrapayplus-python in a project::
 
-    import tatrapayplus_python
+    import tatrapayplus
