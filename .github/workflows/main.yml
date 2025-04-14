@@ -39,7 +39,7 @@ jobs:
         shell: bash
     steps:
       - name: Check out
-        uses: actions/checkoudfsfd4
+        uses: actions/checkout@v4
 
       - name: Set up the environment
         uses: ./.github/actions/setup-python-env
