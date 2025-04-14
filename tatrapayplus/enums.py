@@ -3,7 +3,7 @@ class Scope:
 
 
 class Urls:
-    TOKEN = "/auth/oauth/v2/token"
+    TOKEN_URL = "/auth/oauth/v2/token"
     PAYMENTS = "/v1/payments"
     DIRECT_PAYMENT = "/v1/payments-direct"
     PAYMENT_METHODS = PAYMENTS + "/methods"

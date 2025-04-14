@@ -2,9 +2,8 @@ import socket
 import time
 import uuid
 from base64 import b64encode
-from builtins import str
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional
 
 import requests
 from cryptography.hazmat.backends import default_backend
@@ -83,25 +82,24 @@ class TatrapayPlusClient:
         try:
             response.raise_for_status()
         except Exception:
-            if Urls.TOKEN in response.url:
+            if Urls.TOKEN_URL in response.url:
                 error_body = GetAccessTokenResponse400().from_dict(response.json())
             elif response.status_code == 400:
                 error_body = Field400ErrorBody().from_dict(response.json())
             else:
                 error_body = Field40XErrorBody().from_dict(response.json())
-
             raise TatrapayPlusApiException(error_body)
         return response
 
     def get_access_token(self) -> TatrapayPlusToken:
-        token_url = f"{self.base_url}{Urls.TOKEN}"
+        token_url = f"{self.base_url}{Urls.TOKEN_URL}"
         payload = {
             "grant_type": "client_credentials",
             "client_id": self.client_id,
             "client_secret": self.client_secret,
             "scope": self.scope,
         }
-        response = self.handle_response(requests.post(token_url, data=payload))
+        response = self.handle_response(self.session.post(token_url, data=payload))
 
         return TatrapayPlusToken(
             response.json().get("access_token"), response.json().get("expires_in")
@@ -126,7 +124,7 @@ class TatrapayPlusClient:
         request: InitiatePaymentRequest,
         redirect_uri: str,
         language: str = "sk",
-        preferred_method: str = None,
+        preferred_method: Optional[str] = None,
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
         self.session.headers["Redirect-URI"] = redirect_uri
@@ -202,7 +200,7 @@ class TatrapayPlusClient:
         currency_code: Optional[str] = None,
         country_code: Optional[str] = None,
         total_amount: Optional[float] = None,
-    ) -> List[PaymentMethodRules]:
+    ) -> list[PaymentMethodRules]:
         response = self.get_payment_methods()
         all_methods = response.payment_methods
 
@@ -221,9 +219,7 @@ class TatrapayPlusClient:
                     continue
 
             if country_code and method.supported_country:
-                supported = [
-                    supported_country for supported_country in method.supported_country
-                ]
+                supported = list(method.supported_country)
                 if country_code not in supported:
                     continue
 
@@ -261,8 +257,8 @@ class TatrapayPlusClient:
             encrypted = public_key.encrypt(
                 cid.encode("utf-8"),
                 padding.OAEP(
-                    mgf=padding.MGF1(algorithm=hashes.SHA1()),
-                    algorithm=hashes.SHA1(),
+                    mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                    algorithm=hashes.SHA256(),
                     label=None,
                 ),
             )
