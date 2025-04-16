@@ -86,7 +86,7 @@ class TatrapayPlusClient:
             error_body: Union[
                 Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody
             ]
-            if Urls.AUTH_TOKEN_ENDPOINT in response.url:
+            if Urls.AUTH_ENDPOINT in response.url:
                 error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
                 error_body = Field400ErrorBody.from_dict(json_data)
@@ -97,7 +97,7 @@ class TatrapayPlusClient:
         return response
 
     def get_access_token(self) -> TatrapayPlusToken:
-        token_url = f"{self.base_url}{Urls.AUTH_TOKEN_ENDPOINT}"
+        token_url = f"{self.base_url}{Urls.AUTH_ENDPOINT}"
         payload = {
             "grant_type": "client_credentials",
             "client_id": self.client_id,
