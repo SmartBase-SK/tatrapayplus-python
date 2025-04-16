@@ -1,5 +1,0 @@
-[tool.deptry]
-known_first_party = ["tatrapayplus"]
-
-[tool.deptry.rules]
-DEP002 = false  # Disable "unused dependencies" rule
