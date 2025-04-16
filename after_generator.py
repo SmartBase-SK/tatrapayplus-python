@@ -1,5 +1,4 @@
 import shutil
-import os
 from pathlib import Path
 
 GENERATED_PATH = Path("./tatrapayplus_client/tatra_pay_plus_api_client")

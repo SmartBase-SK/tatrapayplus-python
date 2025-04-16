@@ -2,8 +2,9 @@ import socket
 import time
 import uuid
 from base64 import b64encode
+from collections.abc import MutableMapping
 from pathlib import Path
-from typing import Optional, Any, MutableMapping, Union
+from typing import Any, Optional, Union
 
 import requests
 from cryptography.hazmat.backends import default_backend
@@ -12,20 +13,20 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from requests import Response
 
-from tatrapayplus.enums import Urls, Scope
+from tatrapayplus.enums import Scope, Urls
 from tatrapayplus.errors import TatrapayPlusApiException
 from tatrapayplus.helpers import (
-    get_simple_status,
+    TatrapayPlusLogger,
     get_saved_card_data,
+    get_simple_status,
+    remove_diacritics,
     remove_special_characters_from_strings,
     trim_and_remove_special_characters,
-    remove_diacritics,
-    TatrapayPlusLogger,
 )
 from tatrapayplus.models import (
-    GetAccessTokenResponse400,
     Field40XErrorBody,
     Field400ErrorBody,
+    GetAccessTokenResponse400,
 )
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
@@ -83,9 +84,7 @@ class TatrapayPlusClient:
             response.raise_for_status()
         except Exception as e:
             json_data = response.json()
-            error_body: Union[
-                Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody
-            ]
+            error_body: Union[Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody]
             if Urls.AUTH_ENDPOINT in response.url:
                 error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
@@ -144,8 +143,8 @@ class TatrapayPlusClient:
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("cardDetail", {}).get("cardHolder")
         if card_holder:
-            cleaned_request["cardDetail"]["cardHolder"] = (
-                trim_and_remove_special_characters(remove_diacritics(card_holder))
+            cleaned_request["cardDetail"]["cardHolder"] = trim_and_remove_special_characters(
+                remove_diacritics(card_holder)
             )
 
         response = self.handle_response(self.session.post(url, json=cleaned_request))
@@ -160,8 +159,8 @@ class TatrapayPlusClient:
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("tdsData", {}).get("cardHolder")
         if card_holder:
-            cleaned_request["tdsData"]["cardHolder"] = (
-                trim_and_remove_special_characters(remove_diacritics(card_holder))
+            cleaned_request["tdsData"]["cardHolder"] = trim_and_remove_special_characters(
+                remove_diacritics(card_holder)
             )
 
         response = self.handle_response(self.session.post(url, json=cleaned_request))
@@ -183,9 +182,7 @@ class TatrapayPlusClient:
         self.log(response, helpers)
         return {"status": status, **helpers}
 
-    def update_payment(
-        self, payment_id: str, request: CardPayUpdateInstruction
-    ) -> Response:
+    def update_payment(self, payment_id: str, request: CardPayUpdateInstruction) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
         self.session.headers["Idempotency-Key"] = self.session.headers["X-Request-ID"]
         return self.handle_response(self.session.patch(url, json=request.to_dict()))
@@ -204,11 +201,7 @@ class TatrapayPlusClient:
         available_methods: list[PaymentMethodRules] = []
 
         for method in response.payment_methods:
-            if (
-                currency_code
-                and method.supported_currency
-                and currency_code not in list(method.supported_currency)
-            ):
+            if currency_code and method.supported_currency and currency_code not in list(method.supported_currency):
                 continue
 
             if total_amount is not None and method.amount_range_rule:
@@ -217,11 +210,7 @@ class TatrapayPlusClient:
                 if not (min_amount <= total_amount <= max_amount):
                     continue
 
-            if (
-                country_code
-                and method.supported_country
-                and country_code not in list(method.supported_country)
-            ):
+            if country_code and method.supported_country and country_code not in list(method.supported_country):
                 continue
 
             available_methods.append(method)
@@ -237,9 +226,7 @@ class TatrapayPlusClient:
         return self.handle_response(self.session.post(url, json=request.to_dict()))
 
     @staticmethod
-    def generate_signed_card_id_from_cid(
-        cid: str, public_key_content: Optional[str] = None
-    ) -> Optional[str]:
+    def generate_signed_card_id_from_cid(cid: str, public_key_content: Optional[str] = None) -> Optional[str]:
         if public_key_content is None:
             try:
                 public_key_path = Path(__file__).parent / "../ECID_PUBLIC_KEY_2023.txt"
@@ -268,9 +255,7 @@ class TatrapayPlusClient:
             )
 
             base64_encoded = b64encode(encrypted).decode("utf-8")
-            return "\n".join(
-                base64_encoded[i : i + 64] for i in range(0, len(base64_encoded), 64)
-            )
+            return "\n".join(base64_encoded[i : i + 64] for i in range(0, len(base64_encoded), 64))
 
         except Exception as e:
             print("Encryption error:", e)

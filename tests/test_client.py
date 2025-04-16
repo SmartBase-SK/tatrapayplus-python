@@ -7,31 +7,31 @@ from tatrapayplus.client import TatrapayPlusClient
 from tatrapayplus.enums import SimpleStatus
 from tatrapayplus.helpers import TatrapayPlusLogger
 from tatrapayplus.models import (
-    PayLater,
-    Order,
-    OrderItem,
-    ItemDetail,
-    ItemDetailLangUnit,
-    CapacityInfo,
-    CardDetail,
-    CardDetailCardPayLangOverride,
     Address,
-    RegisterForComfortPayObj,
-    UserData,
-    InitiateDirectTransactionRequest,
-    PaymentSymbols,
-    DirectTransactionTDSData,
-    DirectTransactionIPSPData,
+    AppearanceLogoRequest,
+    AppearanceRequest,
+    AppearanceRequestTheme,
     ApplePayToken,
     ApplePayTokenToken,
     ApplePayTokenTokenHeader,
-    PaymentMethod,
+    CapacityInfo,
+    CardDetail,
+    CardDetailCardPayLangOverride,
     CardPayUpdateInstruction,
     CardPayUpdateInstructionOperationType,
-    AppearanceRequest,
-    AppearanceRequestTheme,
     ColorAttribute,
-    AppearanceLogoRequest,
+    DirectTransactionIPSPData,
+    DirectTransactionTDSData,
+    InitiateDirectTransactionRequest,
+    ItemDetail,
+    ItemDetailLangUnit,
+    Order,
+    OrderItem,
+    PayLater,
+    PaymentMethod,
+    PaymentSymbols,
+    RegisterForComfortPayObj,
+    UserData,
 )
 from tatrapayplus.models.amount import Amount
 from tatrapayplus.models.bank_transfer import BankTransfer
@@ -76,7 +76,6 @@ def test_create_minimal_payment(tatrapay_client):
 
 
 def test_create_full_payment(tatrapay_client):
-
     payment_data = InitiatePaymentRequest(
         base_payment=BasePayment(
             instructed_amount=Amount(
@@ -238,7 +237,6 @@ def test_cancel_payment(tatrapay_client):
 
 @patch("tatrapayplus.client.requests.Session.patch")
 def test_update_payment_mocked(mock_request, tatrapay_client):
-
     mock_response = MagicMock()
     mock_response.status_code = 201
     mock_response.ok = True
@@ -275,7 +273,6 @@ def test_set_appearance(tatrapay_client):
 
 @patch("tatrapayplus.client.requests.Session.post")
 def test_set_appearance_logo_mocked(mock_request, tatrapay_client):
-
     mock_response = MagicMock()
     mock_response.status_code = 201
     mock_response.ok = True
@@ -292,7 +289,6 @@ def test_set_appearance_logo_mocked(mock_request, tatrapay_client):
 
 @patch("tatrapayplus.client.requests.Session.get")
 def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client):
-
     mocked_status_response = {
         "selectedPaymentMethod": "CARD_PAY",
         "authorizationStatus": "AUTH_DONE",

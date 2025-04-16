@@ -103,9 +103,8 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
 
 
 def get_saved_card_data(payment_status: PaymentIntentStatusResponse) -> dict[str, Any]:
-    if (
-        payment_status.selected_payment_method != PaymentMethod.CARD_PAY
-        or not isinstance(payment_status.status, CardPayStatusStructure)
+    if payment_status.selected_payment_method != PaymentMethod.CARD_PAY or not isinstance(
+        payment_status.status, CardPayStatusStructure
     ):
         return {}
 
@@ -141,10 +140,7 @@ def remove_special_characters_from_strings(obj: Any) -> Any:
     elif isinstance(obj, list):
         return [remove_special_characters_from_strings(item) for item in obj]
     elif isinstance(obj, dict):
-        return {
-            key: remove_special_characters_from_strings(value)
-            for key, value in obj.items()
-        }
+        return {key: remove_special_characters_from_strings(value) for key, value in obj.items()}
     return obj
 
 
@@ -185,11 +181,7 @@ class TatrapayPlusLogger:
 
     def _mask_header(self, header: dict[str, Any]) -> dict[str, Any]:
         return {
-            key: (
-                self._mask_value(str(value))
-                if key in self.mask_header_fields
-                else value
-            )
+            key: (self._mask_value(str(value)) if key in self.mask_header_fields else value)
             for key, value in header.items()
         }
 
@@ -202,11 +194,7 @@ class TatrapayPlusLogger:
         readable_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
         request = response.request
-        request_data = (
-            self._mask_body(request.body)
-            if self.mask_sensitive_data and request.body
-            else request.body
-        )
+        request_data = self._mask_body(request.body) if self.mask_sensitive_data and request.body else request.body
 
         headers = (
             self._mask_header(dict(request.headers))
@@ -226,9 +214,7 @@ class TatrapayPlusLogger:
 
         status = response.status_code
         outcome = "success" if response.ok else "error"
-        self.write_line(
-            f"INFO [{readable_time}] [INFO] Response {outcome}(status: {status}):"
-        )
+        self.write_line(f"INFO [{readable_time}] [INFO] Response {outcome}(status: {status}):")
 
         try:
             response_body = response.json()
@@ -236,15 +222,11 @@ class TatrapayPlusLogger:
                 response_body.update(additional_response_data)
 
             response_body_masked = (
-                self._mask_body(response_body)
-                if response_body and self.mask_body_fields
-                else response_body
+                self._mask_body(response_body) if response_body and self.mask_body_fields else response_body
             )
             self.write_line(response_body_masked)
         except Exception:
             self.write_line(response.text)
 
     def write_line(self, line: str) -> None:
-        raise NotImplementedError(
-            "TatrapayPlusLogger subclass must implement write_line()"
-        )
+        raise NotImplementedError("TatrapayPlusLogger subclass must implement write_line()")
