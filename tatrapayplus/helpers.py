@@ -2,7 +2,7 @@ import json
 import re
 import unicodedata
 from datetime import datetime, timezone
-from typing import Any, Optional
+from typing import Any, Optional, Union
 from urllib.parse import parse_qsl
 
 from requests import Response
@@ -13,7 +13,9 @@ from tatrapayplus.models.card_pay_status import CardPayStatus
 from tatrapayplus.models.card_pay_status_structure import CardPayStatusStructure
 from tatrapayplus.models.comfort_pay_status import ComfortPayStatus
 from tatrapayplus.models.pay_later_status import PayLaterStatus
-from tatrapayplus.models.payment_intent_status_response import PaymentIntentStatusResponse
+from tatrapayplus.models.payment_intent_status_response import (
+    PaymentIntentStatusResponse,
+)
 from tatrapayplus.models.payment_method import PaymentMethod
 
 AMEX = "AMEX"
@@ -30,7 +32,7 @@ DISCOVER_4 = ("6011",)
 VISA_1 = ("4",)
 
 
-def identify_card_type(card_num: str | int) -> str:
+def identify_card_type(card_num: Union[str, int]) -> str:
     card_type = UNKNOWN
     card_num = str(card_num)
 
@@ -59,7 +61,10 @@ payment_method_statuses: dict[PaymentMethod, dict[str, list[Any]]] = {
         "rejected": [BankTransferStatus.CANC, BankTransferStatus.RJCT],
     },
     PaymentMethod.PAY_LATER: {
-        "accepted": [PayLaterStatus.LOAN_APPLICATION_FINISHED, PayLaterStatus.LOAN_DISBURSED],
+        "accepted": [
+            PayLaterStatus.LOAN_APPLICATION_FINISHED,
+            PayLaterStatus.LOAN_DISBURSED,
+        ],
         "rejected": [PayLaterStatus.CANCELED, PayLaterStatus.EXPIRED],
     },
     PaymentMethod.CARD_PAY: {
@@ -180,11 +185,19 @@ class TatrapayPlusLogger:
 
     def _mask_header(self, header: dict[str, Any]) -> dict[str, Any]:
         return {
-            key: self._mask_value(str(value)) if key in self.mask_header_fields else value
+            key: (
+                self._mask_value(str(value))
+                if key in self.mask_header_fields
+                else value
+            )
             for key, value in header.items()
         }
 
-    def log(self, response: Response, additional_response_data: Optional[dict[str, Any]] = None) -> None:
+    def log(
+        self,
+        response: Response,
+        additional_response_data: Optional[dict[str, Any]] = None,
+    ) -> None:
         now = datetime.now(timezone.utc)
         readable_time = now.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -213,7 +226,9 @@ class TatrapayPlusLogger:
 
         status = response.status_code
         outcome = "success" if response.ok else "error"
-        self.write_line(f"INFO [{readable_time}] [INFO] Response {outcome}(status: {status}):")
+        self.write_line(
+            f"INFO [{readable_time}] [INFO] Response {outcome}(status: {status}):"
+        )
 
         try:
             response_body = response.json()
@@ -230,4 +245,6 @@ class TatrapayPlusLogger:
             self.write_line(response.text)
 
     def write_line(self, line: str) -> None:
-        raise NotImplementedError("TatrapayPlusLogger subclass must implement write_line()")
+        raise NotImplementedError(
+            "TatrapayPlusLogger subclass must implement write_line()"
+        )
