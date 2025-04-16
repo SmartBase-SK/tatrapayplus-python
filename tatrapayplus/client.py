@@ -113,7 +113,7 @@ class TatrapayPlusClient:
             expires_in=data.get("expires_in", 0),
         )
 
-    def get_headers(self) -> MutableMapping[str, str]:
+    def get_headers(self) -> MutableMapping[str, str | bytes]:
         if not self.token or self.token.is_expired():
             self.token = self.get_access_token()
 
