@@ -1129,6 +1129,7 @@ source = { editable = "." }
 dependencies = [
     { name = "attrs" },
     { name = "cryptography" },
+    { name = "pytest" },
     { name = "requests" },
 ]
 
@@ -1138,7 +1139,6 @@ dev = [
     { name = "mypy" },
     { name = "openapi-python-client" },
     { name = "pre-commit" },
-    { name = "pytest" },
     { name = "pytest-cov" },
     { name = "ruff" },
     { name = "tox-uv" },
@@ -1153,7 +1153,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=0.991" },
     { name = "openapi-python-client", marker = "extra == 'dev'" },
     { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=2.20.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.2.0" },
+    { name = "pytest" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "requests" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11.5" },
