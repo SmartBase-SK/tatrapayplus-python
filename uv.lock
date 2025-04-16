@@ -1127,14 +1127,19 @@ name = "tatrapayplus-python"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "attrs" },
     { name = "cryptography" },
+    { name = "requests" },
+]
+
+[package.optional-dependencies]
+dev = [
     { name = "deptry" },
     { name = "mypy" },
     { name = "openapi-python-client" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-cov" },
-    { name = "requests" },
     { name = "ruff" },
     { name = "tox-uv" },
     { name = "types-requests" },
@@ -1142,18 +1147,20 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "attrs" },
     { name = "cryptography" },
-    { name = "deptry", specifier = ">=0.23.0" },
-    { name = "mypy", specifier = ">=0.991" },
-    { name = "openapi-python-client" },
-    { name = "pre-commit", specifier = ">=2.20.0" },
-    { name = "pytest", specifier = ">=7.2.0" },
-    { name = "pytest-cov", specifier = ">=4.0.0" },
+    { name = "deptry", marker = "extra == 'dev'", specifier = ">=0.23.0" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=0.991" },
+    { name = "openapi-python-client", marker = "extra == 'dev'" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=2.20.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.2.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
     { name = "requests" },
-    { name = "ruff", specifier = ">=0.11.5" },
-    { name = "tox-uv", specifier = ">=1.11.3" },
-    { name = "types-requests" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11.5" },
+    { name = "tox-uv", marker = "extra == 'dev'", specifier = ">=1.11.3" },
+    { name = "types-requests", marker = "extra == 'dev'" },
 ]
+provides-extras = ["dev"]
 
 [[package]]
 name = "tomli"
