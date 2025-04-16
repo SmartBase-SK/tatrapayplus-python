@@ -6,7 +6,7 @@ class Scope(str, Enum):
 
 
 class Urls:
-    AUTH_TOKEN_ENDPOINT = "/auth/oauth/v2/token"
+    AUTH_TOKEN_ENDPOINT = "/auth/oauth/v2/token" # nosec
     PAYMENTS = "/v1/payments"
     DIRECT_PAYMENT = "/v1/payments-direct"
     PAYMENT_METHODS = PAYMENTS + "/methods"

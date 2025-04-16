@@ -5,9 +5,34 @@ import pytest
 
 from tatrapayplus.client import TatrapayPlusClient
 from tatrapayplus.enums import SimpleStatus
-from tatrapayplus.errors import TatrapayPlusApiException
 from tatrapayplus.helpers import TatrapayPlusLogger
-from tatrapayplus.models import *
+from tatrapayplus.models import (
+    PayLater,
+    Order,
+    OrderItem,
+    ItemDetail,
+    ItemDetailLangUnit,
+    CapacityInfo,
+    CardDetail,
+    CardDetailCardPayLangOverride,
+    Address,
+    RegisterForComfortPayObj,
+    UserData,
+    InitiateDirectTransactionRequest,
+    PaymentSymbols,
+    DirectTransactionTDSData,
+    DirectTransactionIPSPData,
+    ApplePayToken,
+    ApplePayTokenToken,
+    ApplePayTokenTokenHeader,
+    PaymentMethod,
+    CardPayUpdateInstruction,
+    CardPayUpdateInstructionOperationType,
+    AppearanceRequest,
+    AppearanceRequestTheme,
+    ColorAttribute,
+    AppearanceLogoRequest,
+)
 from tatrapayplus.models.amount import Amount
 from tatrapayplus.models.bank_transfer import BankTransfer
 from tatrapayplus.models.base_payment import BasePayment
