@@ -16,5 +16,5 @@ class TatrapayPlusApiException(Exception):
     ):
         self.error_body = error_body
 
-    def __str__(self):
-        return self.error_body.to_dict()
+    def __str__(self) -> str:
+        return str(self.error_body.to_dict())

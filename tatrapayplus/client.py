@@ -3,7 +3,7 @@ import time
 import uuid
 from base64 import b64encode
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, MutableMapping
 
 import requests
 from cryptography.hazmat.backends import default_backend
@@ -113,7 +113,7 @@ class TatrapayPlusClient:
             expires_in=data.get("expires_in", 0),
         )
 
-    def get_headers(self) -> dict[str, str]:
+    def get_headers(self) -> MutableMapping[str, str]:
         if not self.token or self.token.is_expired():
             self.token = self.get_access_token()
 
@@ -181,7 +181,7 @@ class TatrapayPlusClient:
             "simple_status": get_simple_status(status),
             "saved_card": get_saved_card_data(status),
         }
-        self.log(response, helpers)  #type: ignore[arg-type]
+        self.log(response, helpers)
         return {"status": status, **helpers}
 
     def update_payment(

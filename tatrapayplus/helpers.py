@@ -174,7 +174,7 @@ class TatrapayPlusLogger:
             for key in self.mask_body_fields:
                 if key in body:
                     body[key] = self._mask_value(str(body[key]))
-            return body
+            return json.dumps(body, indent=2, ensure_ascii=False)
 
         return str(body)
 
@@ -196,7 +196,7 @@ class TatrapayPlusLogger:
         )
 
         headers = (
-            self._mask_header(request.headers)
+            self._mask_header(dict(request.headers))
             if self.mask_sensitive_data and request.headers
             else request.headers
         )
@@ -208,7 +208,7 @@ class TatrapayPlusLogger:
         self.write_line(json.dumps(headers, indent=2, ensure_ascii=False))
         if request_data:
             self.write_line("Body:")
-            self.write_line(request_data)
+            self.write_line(str(request_data))
         self.write_line("")
 
         status = response.status_code
@@ -225,7 +225,7 @@ class TatrapayPlusLogger:
                 if response_body and self.mask_body_fields
                 else response_body
             )
-            self.write_line(json.dumps(response_body_masked, indent=2, ensure_ascii=False))
+            self.write_line(response_body_masked)
         except Exception:
             self.write_line(response.text)
 
