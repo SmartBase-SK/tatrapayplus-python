@@ -1,4 +1,7 @@
-class Scope:
+from enum import Enum
+
+
+class Scope(str, Enum):
     TATRAPAYPLUS = "TATRAPAYPLUS"
 
 
@@ -12,7 +15,7 @@ class Urls:
     APPEARANCE_LOGO = APPEARANCES + "/logo"
 
 
-class SimpleStatus:
+class SimpleStatus(str, Enum):
     ACCEPTED = "ACCEPTED"
     PENDING = "PENDING"
     REJECTED = "REJECTED"

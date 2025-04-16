@@ -88,7 +88,7 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
         return SimpleStatus.PENDING
 
     method = payment_status.selected_payment_method
-    if method in payment_method_statuses:
+    if isinstance(method, PaymentMethod) and method in payment_method_statuses:
         if plain_status in payment_method_statuses[method]["accepted"]:
             return SimpleStatus.ACCEPTED
         if plain_status in payment_method_statuses[method]["rejected"]:
@@ -174,7 +174,7 @@ class TatrapayPlusLogger:
             for key in self.mask_body_fields:
                 if key in body:
                     body[key] = self._mask_value(str(body[key]))
-            return json.dumps(body, indent=2, ensure_ascii=False)
+            return body
 
         return str(body)
 
@@ -205,7 +205,7 @@ class TatrapayPlusLogger:
         self.write_line(f"Method: {request.method}")
         self.write_line(f"URL: {request.url}")
         self.write_line("Headers:")
-        self.write_line(headers)
+        self.write_line(json.dumps(headers, indent=2, ensure_ascii=False))
         if request_data:
             self.write_line("Body:")
             self.write_line(request_data)
@@ -225,7 +225,7 @@ class TatrapayPlusLogger:
                 if response_body and self.mask_body_fields
                 else response_body
             )
-            self.write_line(response_body_masked)
+            self.write_line(json.dumps(response_body_masked, indent=2, ensure_ascii=False))
         except Exception:
             self.write_line(response.text)
 

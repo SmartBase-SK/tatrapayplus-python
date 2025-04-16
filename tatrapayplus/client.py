@@ -31,11 +31,17 @@ from tatrapayplus.models import (
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
 from tatrapayplus.models.card_pay_update_instruction import CardPayUpdateInstruction
-from tatrapayplus.models.initiate_direct_transaction_request import InitiateDirectTransactionRequest
-from tatrapayplus.models.initiate_direct_transaction_response import InitiateDirectTransactionResponse
+from tatrapayplus.models.initiate_direct_transaction_request import (
+    InitiateDirectTransactionRequest,
+)
+from tatrapayplus.models.initiate_direct_transaction_response import (
+    InitiateDirectTransactionResponse,
+)
 from tatrapayplus.models.initiate_payment_request import InitiatePaymentRequest
 from tatrapayplus.models.initiate_payment_response import InitiatePaymentResponse
-from tatrapayplus.models.payment_intent_status_response import PaymentIntentStatusResponse
+from tatrapayplus.models.payment_intent_status_response import (
+    PaymentIntentStatusResponse,
+)
 from tatrapayplus.models.payment_method_rules import PaymentMethodRules
 from tatrapayplus.models.payment_methods_list_response import PaymentMethodsListResponse
 
@@ -78,12 +84,15 @@ class TatrapayPlusClient:
             response.raise_for_status()
         except Exception:
             json_data = response.json()
+            error_body: (
+                Field400ErrorBody | GetAccessTokenResponse400 | Field40XErrorBody
+            )
             if Urls.TOKEN_URL in response.url:
-                error_body = GetAccessTokenResponse400().from_dict(json_data)
+                error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
-                error_body = Field400ErrorBody().from_dict(json_data)
+                error_body = Field400ErrorBody.from_dict(json_data)
             else:
-                error_body = Field40XErrorBody().from_dict(json_data)
+                error_body = Field40XErrorBody.from_dict(json_data)
             raise TatrapayPlusApiException(error_body)
 
         return response
@@ -136,8 +145,8 @@ class TatrapayPlusClient:
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("cardDetail", {}).get("cardHolder")
         if card_holder:
-            cleaned_request["cardDetail"]["cardHolder"] = trim_and_remove_special_characters(
-                remove_diacritics(card_holder)
+            cleaned_request["cardDetail"]["cardHolder"] = (
+                trim_and_remove_special_characters(remove_diacritics(card_holder))
             )
 
         response = self.handle_response(self.session.post(url, json=cleaned_request))
@@ -152,8 +161,8 @@ class TatrapayPlusClient:
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("tdsData", {}).get("cardHolder")
         if card_holder:
-            cleaned_request["tdsData"]["cardHolder"] = trim_and_remove_special_characters(
-                remove_diacritics(card_holder)
+            cleaned_request["tdsData"]["cardHolder"] = (
+                trim_and_remove_special_characters(remove_diacritics(card_holder))
             )
 
         response = self.handle_response(self.session.post(url, json=cleaned_request))
@@ -172,7 +181,7 @@ class TatrapayPlusClient:
             "simple_status": get_simple_status(status),
             "saved_card": get_saved_card_data(status),
         }
-        self.log(response, helpers)
+        self.log(response, helpers)  #type: ignore[arg-type]
         return {"status": status, **helpers}
 
     def update_payment(
@@ -254,12 +263,18 @@ class TatrapayPlusClient:
             )
 
             base64_encoded = b64encode(encrypted).decode("utf-8")
-            return "\n".join(base64_encoded[i:i + 64] for i in range(0, len(base64_encoded), 64))
+            return "\n".join(
+                base64_encoded[i : i + 64] for i in range(0, len(base64_encoded), 64)
+            )
 
         except Exception as e:
             print("Encryption error:", e)
             return None
 
-    def log(self, response: Response, additional_response_data: Optional[dict[str, Any]] = None) -> None:
+    def log(
+        self,
+        response: Response,
+        additional_response_data: Optional[dict[str, Any]] = None,
+    ) -> None:
         if self.logger:
             self.logger.log(response, additional_response_data)

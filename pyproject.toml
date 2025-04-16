@@ -28,6 +28,7 @@ dependencies = [
     "openapi-python-client",
     "cryptography",
     "requests",
+    "types-requests",
 ]
 [project.urls]
 Homepage = "https://SmartBase-SK.github.io/tatrapayplus-python/"
