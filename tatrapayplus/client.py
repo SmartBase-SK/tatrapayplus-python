@@ -12,7 +12,6 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from requests import Response
 
-from tatrapayplus import enums
 from tatrapayplus.enums import Urls, Scope
 from tatrapayplus.errors import TatrapayPlusApiException
 from tatrapayplus.helpers import (
@@ -84,9 +83,9 @@ class TatrapayPlusClient:
             response.raise_for_status()
         except Exception:
             json_data = response.json()
-            error_body: (
-                Field400ErrorBody | GetAccessTokenResponse400 | Field40XErrorBody
-            )
+            error_body: Union[
+                Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody
+            ]
             if Urls.TOKEN_URL in response.url:
                 error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
