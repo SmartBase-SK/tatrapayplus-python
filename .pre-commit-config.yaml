@@ -7,21 +7,21 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: check-json
-        exclude: ^(.devcontainer/devcontainer\.json|docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+        exclude: ^.devcontainer/devcontainer.json
       - id: pretty-format-json
-        args: [--check]
-        exclude: ^(.devcontainer/devcontainer\.json|docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+        exclude: ^(.devcontainer/devcontainer.json|tatrapayplus_api_sandbox\.json)$
+        args: [--autofix]
       - id: end-of-file-fixer
-        exclude: ^(docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+        exclude: ^(.devcontainer/devcontainer\.json|docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
       - id: trailing-whitespace
-        exclude: ^(docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+        exclude: ^(.devcontainer/devcontainer\.json|docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.11.5"
     hooks:
       - id: ruff
-        args: [--exit-non-zero-on-fix, --no-fix]
-        exclude: ^(docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+        args: [--exit-non-zero-on-fix]
+        exclude: ^(.devcontainer/devcontainer\.json|docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
       - id: ruff-format
-        args: [--check]
-        exclude: ^(docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+        exclude: ^(.devcontainer/devcontainer\.json|docs/conf\.py|pyproject\.toml|ECID_PUBLIC_KEY_2023\.txt|\.github/workflows/on-release-main\.yml|tatrapayplus_api_sandbox\.json)$
+
