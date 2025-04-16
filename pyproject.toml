@@ -31,18 +31,7 @@ dependencies = [
     "types-requests",
     "attrs"
 ]
-[tool.deptry.ignore]
-unused = [
-    "pytest",
-    "pre-commit",
-    "tox-uv",
-    "deptry",
-    "mypy",
-    "pytest-cov",
-    "ruff",
-    "openapi-python-client",
-    "types-requests"
-]
+
 [project.urls]
 Homepage = "https://SmartBase-SK.github.io/tatrapayplus-python/"
 Repository = "https://github.com/SmartBase-SK/tatrapayplus-python"
@@ -130,4 +119,3 @@ source = ["tatrapayplus"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["tatrapayplus"]
-
