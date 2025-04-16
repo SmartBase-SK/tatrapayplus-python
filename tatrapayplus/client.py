@@ -81,23 +81,23 @@ class TatrapayPlusClient:
 
         try:
             response.raise_for_status()
-        except Exception:
+        except Exception as e:
             json_data = response.json()
             error_body: Union[
                 Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody
             ]
-            if Urls.TOKEN_URL in response.url:
+            if Urls.AUTH_TOKEN_ENDPOINT in response.url:
                 error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
                 error_body = Field400ErrorBody.from_dict(json_data)
             else:
                 error_body = Field40XErrorBody.from_dict(json_data)
-            raise TatrapayPlusApiException(error_body)
+            raise TatrapayPlusApiException(error_body) from e
 
         return response
 
     def get_access_token(self) -> TatrapayPlusToken:
-        token_url = f"{self.base_url}{Urls.TOKEN_URL}"
+        token_url = f"{self.base_url}{Urls.AUTH_TOKEN_ENDPOINT}"
         payload = {
             "grant_type": "client_credentials",
             "client_id": self.client_id,
@@ -204,9 +204,12 @@ class TatrapayPlusClient:
         available_methods: list[PaymentMethodRules] = []
 
         for method in response.payment_methods:
-            if currency_code and method.supported_currency:
-                if currency_code not in list(method.supported_currency):
-                    continue
+            if (
+                currency_code
+                and method.supported_currency
+                and currency_code not in list(method.supported_currency)
+            ):
+                continue
 
             if total_amount is not None and method.amount_range_rule:
                 min_amount = method.amount_range_rule.min_amount or 0
@@ -214,9 +217,12 @@ class TatrapayPlusClient:
                 if not (min_amount <= total_amount <= max_amount):
                     continue
 
-            if country_code and method.supported_country:
-                if country_code not in list(method.supported_country):
-                    continue
+            if (
+                country_code
+                and method.supported_country
+                and country_code not in list(method.supported_country)
+            ):
+                continue
 
             available_methods.append(method)
 
