@@ -2,6 +2,7 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pytest
+import responses
 
 from tatrapayplus.client import TatrapayPlusClient
 from tatrapayplus.enums import SimpleStatus
@@ -317,3 +318,18 @@ def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client)
     assert response["simple_status"] == SimpleStatus.AUTHORIZED
     assert response["saved_card"]["credit_card"] == "Visa"
     assert response["saved_card"]["cid"] == "123"
+
+
+@responses.activate
+def test_retry_policy(tatrapay_client):
+    url = "https://example.com/test"
+    retry_count = 3
+
+    for _ in range(retry_count):
+        responses.add(responses.GET, url, status=500)
+    responses.add(responses.GET, url, status=200, json={"success": True})
+
+    response = tatrapay_client.session.get(url)
+
+    assert response.status_code == 200
+    assert len(responses.calls) == retry_count + 1

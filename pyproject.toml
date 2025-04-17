@@ -34,7 +34,8 @@ dev = [
     "ruff>=0.11.5",
     "openapi-python-client",
     "types-requests",
-    "urllib3 >=2.0"
+    "urllib3 >=2.0",
+    "responses"
 ]
 
 [project.urls]
@@ -135,5 +136,6 @@ DEP002 = [
     "pytest-cov",
     "ruff",
     "openapi-python-client",
-    "types-requests"
+    "types-requests",
+    "responses"
 ]
