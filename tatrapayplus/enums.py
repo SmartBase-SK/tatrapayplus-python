@@ -16,6 +16,7 @@ class Urls:
 
 
 class SimpleStatus(str, Enum):
-    ACCEPTED = "ACCEPTED"
+    AUTHORIZED = "AUTHORIZED"
     PENDING = "PENDING"
+    CAPTURE = "CAPTURE"
     REJECTED = "REJECTED"

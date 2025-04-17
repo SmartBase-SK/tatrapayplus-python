@@ -314,6 +314,6 @@ def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client)
 
     response = tatrapay_client.get_payment_status("123")
 
-    assert response["simple_status"] == SimpleStatus.ACCEPTED
+    assert response["simple_status"] == SimpleStatus.AUTHORIZED
     assert response["saved_card"]["credit_card"] == "Visa"
     assert response["saved_card"]["cid"] == "123"

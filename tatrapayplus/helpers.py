@@ -53,27 +53,32 @@ def identify_card_type(card_num: Union[str, int]) -> str:
 
 payment_method_statuses: dict[PaymentMethod, dict[str, list[Any]]] = {
     PaymentMethod.QR_PAY: {
-        "accepted": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
+        "authorized": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
         "rejected": [BankTransferStatus.CANC, BankTransferStatus.RJCT],
+        "capture": [],
     },
     PaymentMethod.BANK_TRANSFER: {
-        "accepted": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
+        "authorized": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
         "rejected": [BankTransferStatus.CANC, BankTransferStatus.RJCT],
+        "capture": [],
     },
     PaymentMethod.PAY_LATER: {
-        "accepted": [
+        "authorized": [
             PayLaterStatus.LOAN_APPLICATION_FINISHED,
             PayLaterStatus.LOAN_DISBURSED,
         ],
         "rejected": [PayLaterStatus.CANCELED, PayLaterStatus.EXPIRED],
+        "capture": [],
     },
     PaymentMethod.CARD_PAY: {
-        "accepted": [CardPayStatus.OK, CardPayStatus.CB],
+        "authorized": [CardPayStatus.OK, CardPayStatus.CB],
         "rejected": [CardPayStatus.FAIL],
+        "capture": [CardPayStatus.PA],
     },
     PaymentMethod.DIRECT_API: {
-        "accepted": [CardPayStatus.OK, CardPayStatus.CB],
+        "authorized": [CardPayStatus.OK, CardPayStatus.CB],
         "rejected": [CardPayStatus.FAIL],
+        "capture": [],
     },
 }
 
@@ -94,8 +99,10 @@ def get_simple_status(payment_status: PaymentIntentStatusResponse) -> SimpleStat
 
     method = payment_status.selected_payment_method
     if isinstance(method, PaymentMethod) and method in payment_method_statuses:
-        if plain_status in payment_method_statuses[method]["accepted"]:
-            return SimpleStatus.ACCEPTED
+        if plain_status in payment_method_statuses[method]["authorized"]:
+            return SimpleStatus.AUTHORIZED
+        if plain_status in payment_method_statuses[method]["capture"]:
+            return SimpleStatus.CAPTURE
         if plain_status in payment_method_statuses[method]["rejected"]:
             return SimpleStatus.REJECTED
 
