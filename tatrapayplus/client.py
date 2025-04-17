@@ -1,4 +1,3 @@
-import socket
 import time
 import uuid
 from base64 import b64encode
@@ -74,7 +73,7 @@ class TatrapayPlusClient:
         self.scope = scope
         self.token: Optional[TatrapayPlusToken] = None
         self.session = requests.Session()
-        self.session.headers = self.get_headers()
+        self.session.headers = self.get_default_headers()
 
     def handle_response(self, response: Response, loging: bool = True) -> Response:
         if loging:
@@ -111,32 +110,30 @@ class TatrapayPlusClient:
             expires_in=data.get("expires_in", 0),
         )
 
-    def get_headers(self) -> MutableMapping[str, Union[str, bytes]]:
+    def get_default_headers(self) -> MutableMapping[str, Union[str, bytes]]:
         if not self.token or self.token.is_expired():
             self.token = self.get_access_token()
-
-        try:
-            ip_address = socket.gethostbyname(socket.gethostname())
-        except Exception:
-            ip_address = "127.0.0.1"
 
         return {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
             "X-Request-ID": str(uuid.uuid4()),
-            "IP-Address": ip_address,
         }
 
     def create_payment(
         self,
         request: InitiatePaymentRequest,
         redirect_uri: str,
+        ip_address: str,
         language: str = "sk",
         preferred_method: Optional[str] = None,
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
+
         self.session.headers["Redirect-URI"] = redirect_uri
         self.session.headers["Accept-Language"] = language.lower()
+        self.session.headers["IP-Address"] = ip_address
+
         if preferred_method:
             self.session.headers["Preferred-Method"] = preferred_method
 
@@ -151,10 +148,14 @@ class TatrapayPlusClient:
         return InitiatePaymentResponse.from_dict(response.json())
 
     def create_payment_direct(
-        self, request: InitiateDirectTransactionRequest, redirect_uri: str
+        self,
+        request: InitiateDirectTransactionRequest,
+        redirect_uri: str,
+        ip_address: str,
     ) -> InitiateDirectTransactionResponse:
         url = f"{self.base_url}{Urls.DIRECT_PAYMENT}"
         self.session.headers["Redirect-URI"] = redirect_uri
+        self.session.headers["IP-Address"] = ip_address
 
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("tdsData", {}).get("cardHolder")

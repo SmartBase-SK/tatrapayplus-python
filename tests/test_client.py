@@ -69,8 +69,7 @@ def get_minimal_payment_data():
 
 def test_create_minimal_payment(tatrapay_client):
     payment_response = tatrapay_client.create_payment(
-        request=get_minimal_payment_data(),
-        redirect_uri="https://tatrabanka.sk/",
+        request=get_minimal_payment_data(), redirect_uri="https://tatrabanka.sk/", ip_address="127.0.0.1"
     )
     assert payment_response.payment_id is not None
 
@@ -142,8 +141,7 @@ def test_create_full_payment(tatrapay_client):
     )
 
     payment_response = tatrapay_client.create_payment(
-        request=payment_data,
-        redirect_uri="https://tatrabanka.sk/",
+        request=payment_data, redirect_uri="https://tatrabanka.sk/", ip_address="127.0.0.1"
     )
 
     assert payment_response.payment_id is not None
@@ -201,8 +199,7 @@ def test_create_direct_payment(tatrapay_client):
     )
 
     payment_response = tatrapay_client.create_payment_direct(
-        request=payment_data,
-        redirect_uri="https://tatrabanka.sk/",
+        request=payment_data, redirect_uri="https://tatrabanka.sk/", ip_address="127.0.0.1"
     )
 
     assert payment_response.payment_id is not None
@@ -228,8 +225,7 @@ def test_get_available_payment_methods(tatrapay_client):
 def test_cancel_payment(tatrapay_client):
     cancel_payment_response = tatrapay_client.cancel_payment(
         tatrapay_client.create_payment(
-            request=get_minimal_payment_data(),
-            redirect_uri="https://tatrabanka.sk/",
+            request=get_minimal_payment_data(), redirect_uri="https://tatrabanka.sk/", ip_address="127.0.0.1"
         ).payment_id
     )
     assert cancel_payment_response.ok
@@ -253,8 +249,7 @@ def test_update_payment_mocked(mock_request, tatrapay_client):
 def test_get_payment_status(tatrapay_client):
     payment_status = tatrapay_client.get_payment_status(
         tatrapay_client.create_payment(
-            request=get_minimal_payment_data(),
-            redirect_uri="https://tatrabanka.sk/",
+            request=get_minimal_payment_data(), redirect_uri="https://tatrabanka.sk/", ip_address="127.0.0.1"
         ).payment_id
     )
     assert payment_status is not None
