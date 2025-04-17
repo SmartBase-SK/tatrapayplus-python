@@ -11,6 +11,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from requests import Response
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 
 from tatrapayplus.enums import Scope, Urls
 from tatrapayplus.errors import TatrapayPlusApiException
@@ -72,8 +74,23 @@ class TatrapayPlusClient:
         self.client_secret = client_secret
         self.scope = scope
         self.token: Optional[TatrapayPlusToken] = None
-        self.session = requests.Session()
+        self.session = self.init_session()
         self.session.headers = self.get_default_headers()
+
+    @staticmethod
+    def init_session() -> requests.Session:
+        session = requests.Session()
+
+        retries = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods=["GET", "POST", "PATCH", "DELETE"],
+        )
+        adapter = HTTPAdapter(max_retries=retries)
+        session.mount("http://", adapter)
+        session.mount("https://", adapter)
+        return session
 
     def handle_response(self, response: Response, loging: bool = True) -> Response:
         if loging:
@@ -83,14 +100,15 @@ class TatrapayPlusClient:
             response.raise_for_status()
         except Exception as e:
             json_data = response.json()
-            error_body: Union[Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody]
+            error_body: Union[None, Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody] = None
             if Urls.AUTH_ENDPOINT in response.url:
                 error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
                 error_body = Field400ErrorBody.from_dict(json_data)
-            else:
+            elif response.status_code < 500:
                 error_body = Field40XErrorBody.from_dict(json_data)
-            raise TatrapayPlusApiException(error_body) from e
+            if error_body:
+                raise TatrapayPlusApiException(error_body) from e
 
         return response
 

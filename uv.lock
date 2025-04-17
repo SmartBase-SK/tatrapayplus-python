@@ -1143,6 +1143,7 @@ dev = [
     { name = "ruff" },
     { name = "tox-uv" },
     { name = "types-requests" },
+    { name = "urllib3" },
 ]
 
 [package.metadata]
@@ -1159,6 +1160,7 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11.5" },
     { name = "tox-uv", marker = "extra == 'dev'", specifier = ">=1.11.3" },
     { name = "types-requests", marker = "extra == 'dev'" },
+    { name = "urllib3", marker = "extra == 'dev'", specifier = ">=2.0" },
 ]
 provides-extras = ["dev"]
 
