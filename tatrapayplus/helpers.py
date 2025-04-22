@@ -53,32 +53,32 @@ def identify_card_type(card_num: Union[str, int]) -> str:
 
 payment_method_statuses: dict[PaymentMethod, dict[str, list[Any]]] = {
     PaymentMethod.QR_PAY: {
-        "authorized": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
+        "capture": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
         "rejected": [BankTransferStatus.CANC, BankTransferStatus.RJCT],
-        "capture": [],
+        "authorized": [],
     },
     PaymentMethod.BANK_TRANSFER: {
-        "authorized": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
+        "capture": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
         "rejected": [BankTransferStatus.CANC, BankTransferStatus.RJCT],
-        "capture": [],
+        "authorized": [],
     },
     PaymentMethod.PAY_LATER: {
-        "authorized": [
+        "capture": [
             PayLaterStatus.LOAN_APPLICATION_FINISHED,
             PayLaterStatus.LOAN_DISBURSED,
         ],
         "rejected": [PayLaterStatus.CANCELED, PayLaterStatus.EXPIRED],
-        "capture": [],
+        "authorized": [],
     },
     PaymentMethod.CARD_PAY: {
-        "authorized": [CardPayStatus.OK, CardPayStatus.CB],
+        "capture": [CardPayStatus.OK, CardPayStatus.CB],
         "rejected": [CardPayStatus.FAIL],
-        "capture": [CardPayStatus.PA],
+        "authorized": [CardPayStatus.PA],
     },
     PaymentMethod.DIRECT_API: {
-        "authorized": [CardPayStatus.OK, CardPayStatus.CB],
+        "capture": [CardPayStatus.OK, CardPayStatus.CB],
         "rejected": [CardPayStatus.FAIL],
-        "capture": [],
+        "authorized": [],
     },
 }
 
