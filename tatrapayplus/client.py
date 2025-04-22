@@ -14,7 +14,7 @@ from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from tatrapayplus.enums import Scope, Urls
+from tatrapayplus.enums import Mode, Scope, Urls
 from tatrapayplus.errors import TatrapayPlusApiException
 from tatrapayplus.helpers import (
     TatrapayPlusLogger,
@@ -62,17 +62,20 @@ class TatrapayPlusToken:
 class TatrapayPlusClient:
     def __init__(
         self,
-        base_url: str,
         client_id: str,
         client_secret: str,
         scope: Scope = Scope.TATRAPAYPLUS,
+        mode: Mode = Mode.SANDBOX,
         logger: Optional[TatrapayPlusLogger] = None,
     ) -> None:
         self.logger = logger
-        self.base_url = base_url
         self.client_id = client_id
         self.client_secret = client_secret
         self.scope = scope
+        if mode == Mode.PRODUCTION:
+            self.base_url = Urls.PRODUCTION
+        else:
+            self.base_url = Urls.SANDBOX
         self.token: Optional[TatrapayPlusToken] = None
         self.session = self.init_session()
         self.session.headers = self.get_default_headers()

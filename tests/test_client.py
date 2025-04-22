@@ -5,7 +5,7 @@ import pytest
 import responses
 
 from tatrapayplus.client import TatrapayPlusClient
-from tatrapayplus.enums import SimpleStatus
+from tatrapayplus.enums import Mode, SimpleStatus
 from tatrapayplus.helpers import TatrapayPlusLogger
 from tatrapayplus.models import (
     Address,
@@ -48,9 +48,9 @@ class TestLogger(TatrapayPlusLogger):
 @pytest.fixture
 def tatrapay_client():
     return TatrapayPlusClient(
-        "https://api.tatrabanka.sk/tatrapayplus/sandbox",
         client_id=os.environ["TATRAPAY_CLIENT_ID"],
         client_secret=os.environ["TATRAPAY_CLIENT_SECRET"],
+        mode=Mode.SANDBOX,
         logger=TestLogger(),
     )
 
@@ -315,7 +315,7 @@ def test_saved_card_and_simple_status_data_mocked(mock_request, tatrapay_client)
 
     response = tatrapay_client.get_payment_status("123")
 
-    assert response["simple_status"] == SimpleStatus.AUTHORIZED
+    assert response["simple_status"] == SimpleStatus.CAPTURE
     assert response["saved_card"]["credit_card"] == "Visa"
     assert response["saved_card"]["cid"] == "123"
 
