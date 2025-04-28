@@ -1,6 +1,6 @@
 [project]
 name = "tatrapayplus-python"
-version = "0.0.1"
+version = "1.0.0"
 description = "Python package for Tatrapay+ payment gateway."
 authors = [{ name = "SmartBase s.r.o.", email = "info@smartbase.sk" }]
 readme = "README.md"
