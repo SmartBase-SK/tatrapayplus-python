@@ -1,10 +1,11 @@
 import os
+import time
 from unittest.mock import MagicMock, patch
 
 import pytest
 import responses
 
-from tatrapayplus.client import TatrapayPlusClient
+from tatrapayplus.client import TatrapayPlusToken, TBPlusSDK
 from tatrapayplus.enums import Mode, SimpleStatus
 from tatrapayplus.helpers import TatrapayPlusLogger
 from tatrapayplus.models import (
@@ -47,7 +48,7 @@ class TestLogger(TatrapayPlusLogger):
 
 @pytest.fixture
 def tatrapay_client():
-    return TatrapayPlusClient(
+    return TBPlusSDK(
         client_id=os.environ["TATRAPAY_CLIENT_ID"],
         client_secret=os.environ["TATRAPAY_CLIENT_SECRET"],
         mode=Mode.SANDBOX,
@@ -283,6 +284,8 @@ def test_set_appearance_logo_mocked(mock_request, tatrapay_client):
     mock_response.status_code = 201
     mock_response.ok = True
     mock_request.return_value = mock_response
+
+    tatrapay_client.token = TatrapayPlusToken("123", expires_in=int(time.time() + 3600))
 
     logo_data = AppearanceLogoRequest(
         logo_image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII",

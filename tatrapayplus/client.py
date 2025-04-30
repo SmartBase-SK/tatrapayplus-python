@@ -59,7 +59,7 @@ class TatrapayPlusToken:
         return self.token
 
 
-class TatrapayPlusClient:
+class TBPlusSDK:
     def __init__(
         self,
         client_id: str,
@@ -78,7 +78,6 @@ class TatrapayPlusClient:
             self.base_url = Urls.SANDBOX
         self.token: Optional[TatrapayPlusToken] = None
         self.session = self.init_session()
-        self.session.headers = self.get_default_headers()
 
     @staticmethod
     def init_session() -> requests.Session:
@@ -150,7 +149,7 @@ class TatrapayPlusClient:
         preferred_method: Optional[str] = None,
     ) -> InitiatePaymentResponse:
         url = f"{self.base_url}{Urls.PAYMENTS}"
-
+        self.session.headers = self.get_default_headers()
         self.session.headers["Redirect-URI"] = redirect_uri
         self.session.headers["Accept-Language"] = language.lower()
         self.session.headers["IP-Address"] = ip_address
@@ -175,6 +174,7 @@ class TatrapayPlusClient:
         ip_address: str,
     ) -> InitiateDirectTransactionResponse:
         url = f"{self.base_url}{Urls.DIRECT_PAYMENT}"
+        self.session.headers = self.get_default_headers()
         self.session.headers["Redirect-URI"] = redirect_uri
         self.session.headers["IP-Address"] = ip_address
 
@@ -189,12 +189,14 @@ class TatrapayPlusClient:
         return InitiateDirectTransactionResponse.from_dict(response.json())
 
     def get_payment_methods(self) -> PaymentMethodsListResponse:
+        self.session.headers = self.get_default_headers()
         url = f"{self.base_url}{Urls.PAYMENT_METHODS}"
         response = self.handle_response(self.session.get(url))
         return PaymentMethodsListResponse.from_dict(response.json())
 
     def get_payment_status(self, payment_id: str) -> dict[str, Any]:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}{Urls.STATUS}"
+        self.session.headers = self.get_default_headers()
         response = self.handle_response(self.session.get(url), loging=False)
         status = PaymentIntentStatusResponse.from_dict(response.json())
         helpers = {
@@ -206,11 +208,13 @@ class TatrapayPlusClient:
 
     def update_payment(self, payment_id: str, request: CardPayUpdateInstruction) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
+        self.session.headers = self.get_default_headers()
         self.session.headers["Idempotency-Key"] = self.session.headers["X-Request-ID"]
         return self.handle_response(self.session.patch(url, json=request.to_dict()))
 
     def cancel_payment(self, payment_id: str) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
+        self.session.headers = self.get_default_headers()
         return self.handle_response(self.session.delete(url))
 
     def get_available_payment_methods(
@@ -241,10 +245,12 @@ class TatrapayPlusClient:
 
     def set_appearance(self, request: AppearanceRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCES}"
+        self.session.headers = self.get_default_headers()
         return self.handle_response(self.session.post(url, json=request.to_dict()))
 
     def set_appearance_logo(self, request: AppearanceLogoRequest) -> Response:
         url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
+        self.session.headers = self.get_default_headers()
         return self.handle_response(self.session.post(url, json=request.to_dict()))
 
     @staticmethod
