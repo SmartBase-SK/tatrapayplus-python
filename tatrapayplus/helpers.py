@@ -53,7 +53,7 @@ def identify_card_type(card_num: Union[str, int]) -> str:
 
 payment_method_statuses: dict[PaymentMethod, dict[str, list[Any]]] = {
     PaymentMethod.QR_PAY: {
-        "capture": [BankTransferStatus.ACSC, BankTransferStatus.ACCC],
+        "capture": [BankTransferStatus.ACCC],
         "rejected": [BankTransferStatus.CANC, BankTransferStatus.RJCT],
         "authorized": [],
     },
