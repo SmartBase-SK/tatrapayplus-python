@@ -29,6 +29,7 @@ from tatrapayplus.models import (
     Field400ErrorBody,
     GetAccessTokenResponse400,
     BasicCalculationRequest,
+    BasicCalculationResponseItem,
 )
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
@@ -268,11 +269,18 @@ class TBPlusSDK:
 
     def precalculate_loan(
         self, request: BasicCalculationRequest, ip_address: str
-    ) -> Response:
+    ) -> list[BasicCalculationResponseItem]:
+        loan_offers: list[BasicCalculationResponseItem] = []
+
         url = f"{self.base_url}{Urls.LOAN_PRECALCULATION}"
         self.session.headers = self.get_default_headers()
         self.session.headers["IP-Address"] = ip_address
-        return self.handle_response(self.session.put(url, json=request.to_dict()))
+
+        response = self.handle_response(self.session.put(url, json=request.to_dict()))
+        for loan_item in response.json():
+            loan_offers.append(BasicCalculationResponseItem.from_dict(loan_item))
+
+        return loan_offers
 
     @staticmethod
     def generate_signed_card_id_from_cid(
