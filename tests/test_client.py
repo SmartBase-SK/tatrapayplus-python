@@ -16,13 +16,14 @@ from tatrapayplus.models import (
     ApplePayToken,
     ApplePayTokenToken,
     ApplePayTokenTokenHeader,
+    BasicCalculationRequest,
+    BasicCalculationRequestPaymentMethod,
     CapacityInfo,
     CardDetail,
     CardDetailCardPayLangOverride,
     CardPayUpdateInstruction,
     CardPayUpdateInstructionOperationType,
     ColorAttribute,
-    TransactionIPSPData,
     DirectTransactionTDSData,
     InitiateDirectTransactionRequest,
     ItemDetail,
@@ -33,9 +34,8 @@ from tatrapayplus.models import (
     PaymentMethod,
     PaymentSymbols,
     RegisterForComfortPayObj,
+    TransactionIPSPData,
     UserData,
-    BasicCalculationRequest,
-    BasicCalculationRequestPaymentMethod,
 )
 from tatrapayplus.models.amount import Amount
 from tatrapayplus.models.bank_transfer import BankTransfer
