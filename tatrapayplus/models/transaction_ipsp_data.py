@@ -4,12 +4,13 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="DirectTransactionIPSPData")
+T = TypeVar("T", bound="TransactionIPSPData")
 
 
 @_attrs_define
-class DirectTransactionIPSPData:
-    """
+class TransactionIPSPData:
+    """In case of payment facilitator mode - this structure is mandatory
+
     Attributes:
         sub_merchant_id (str):
         name (str):
@@ -56,15 +57,15 @@ class DirectTransactionIPSPData:
 
         country = d.pop("country")
 
-        direct_transaction_ipsp_data = cls(
+        transaction_ipsp_data = cls(
             sub_merchant_id=sub_merchant_id,
             name=name,
             location=location,
             country=country,
         )
 
-        direct_transaction_ipsp_data.additional_properties = d
-        return direct_transaction_ipsp_data
+        transaction_ipsp_data.additional_properties = d
+        return transaction_ipsp_data
 
     @property
     def additional_keys(self) -> list[str]:

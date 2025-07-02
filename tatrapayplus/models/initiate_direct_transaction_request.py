@@ -9,9 +9,9 @@ from ..types import UNSET, Unset
 if TYPE_CHECKING:
     from ..models.amount import Amount
     from ..models.apple_pay_token import ApplePayToken
-    from ..models.direct_transaction_ipsp_data import DirectTransactionIPSPData
     from ..models.direct_transaction_tds_data import DirectTransactionTDSData
     from ..models.payment_symbols import PaymentSymbols
+    from ..models.transaction_ipsp_data import TransactionIPSPData
 
 
 T = TypeVar("T", bound="InitiateDirectTransactionRequest")
@@ -27,7 +27,7 @@ class InitiateDirectTransactionRequest:
         tds_data (DirectTransactionTDSData): In case of Direct API either cardHolder or email is mandatory
         token (Union['ApplePayToken', str]):
         is_pre_authorization (Union[Unset, bool]): If true - pre-authorization transaction
-        ipsp_data (Union[Unset, DirectTransactionIPSPData]):
+        ipsp_data (Union[Unset, TransactionIPSPData]): In case of payment facilitator mode - this structure is mandatory
     """
 
     amount: "Amount"
@@ -35,7 +35,7 @@ class InitiateDirectTransactionRequest:
     tds_data: "DirectTransactionTDSData"
     token: Union["ApplePayToken", str]
     is_pre_authorization: Union[Unset, bool] = UNSET
-    ipsp_data: Union[Unset, "DirectTransactionIPSPData"] = UNSET
+    ipsp_data: Union[Unset, "TransactionIPSPData"] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -85,9 +85,9 @@ class InitiateDirectTransactionRequest:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.amount import Amount
         from ..models.apple_pay_token import ApplePayToken
-        from ..models.direct_transaction_ipsp_data import DirectTransactionIPSPData
         from ..models.direct_transaction_tds_data import DirectTransactionTDSData
         from ..models.payment_symbols import PaymentSymbols
+        from ..models.transaction_ipsp_data import TransactionIPSPData
 
         d = dict(src_dict)
         amount = Amount.from_dict(d.pop("amount"))
@@ -123,11 +123,11 @@ class InitiateDirectTransactionRequest:
         is_pre_authorization = d.pop("isPreAuthorization", UNSET)
 
         _ipsp_data = d.pop("ipspData", UNSET)
-        ipsp_data: Union[Unset, DirectTransactionIPSPData]
+        ipsp_data: Union[Unset, TransactionIPSPData]
         if isinstance(_ipsp_data, Unset):
             ipsp_data = UNSET
         else:
-            ipsp_data = DirectTransactionIPSPData.from_dict(_ipsp_data)
+            ipsp_data = TransactionIPSPData.from_dict(_ipsp_data)
 
         initiate_direct_transaction_request = cls(
             amount=amount,

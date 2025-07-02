@@ -25,6 +25,7 @@ class PaymentMethodRules:
         supported_country (Union[Unset, list[str]]): Payment method is applicable for payment to listed countries
         allowed_bank_providers (Union[Unset, list['Provider']]): Allowed bank providers for BANK_TRNASFER method
             selected by TatraPayPlus client
+        is_precalculation_allowed (Union[Unset, bool]):  Default: False.
     """
 
     payment_method: PaymentMethod
@@ -32,6 +33,7 @@ class PaymentMethodRules:
     supported_currency: Union[Unset, list[str]] = UNSET
     supported_country: Union[Unset, list[str]] = UNSET
     allowed_bank_providers: Union[Unset, list["Provider"]] = UNSET
+    is_precalculation_allowed: Union[Unset, bool] = False
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -52,11 +54,17 @@ class PaymentMethodRules:
         allowed_bank_providers: Union[Unset, list[dict[str, Any]]] = UNSET
         if not isinstance(self.allowed_bank_providers, Unset):
             allowed_bank_providers = []
-            for componentsschemasallowed_bank_providers_item_data in self.allowed_bank_providers:
+            for (
+                componentsschemasallowed_bank_providers_item_data
+            ) in self.allowed_bank_providers:
                 componentsschemasallowed_bank_providers_item = (
                     componentsschemasallowed_bank_providers_item_data.to_dict()
                 )
-                allowed_bank_providers.append(componentsschemasallowed_bank_providers_item)
+                allowed_bank_providers.append(
+                    componentsschemasallowed_bank_providers_item
+                )
+
+        is_precalculation_allowed = self.is_precalculation_allowed
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -73,6 +81,8 @@ class PaymentMethodRules:
             field_dict["supportedCountry"] = supported_country
         if allowed_bank_providers is not UNSET:
             field_dict["allowedBankProviders"] = allowed_bank_providers
+        if is_precalculation_allowed is not UNSET:
+            field_dict["isPrecalculationAllowed"] = is_precalculation_allowed
 
         return field_dict
 
@@ -97,12 +107,16 @@ class PaymentMethodRules:
 
         allowed_bank_providers = []
         _allowed_bank_providers = d.pop("allowedBankProviders", UNSET)
-        for componentsschemasallowed_bank_providers_item_data in _allowed_bank_providers or []:
+        for componentsschemasallowed_bank_providers_item_data in (
+            _allowed_bank_providers or []
+        ):
             componentsschemasallowed_bank_providers_item = Provider.from_dict(
                 componentsschemasallowed_bank_providers_item_data
             )
 
             allowed_bank_providers.append(componentsschemasallowed_bank_providers_item)
+
+        is_precalculation_allowed = d.pop("isPrecalculationAllowed", UNSET)
 
         payment_method_rules = cls(
             payment_method=payment_method,
@@ -110,6 +124,7 @@ class PaymentMethodRules:
             supported_currency=supported_currency,
             supported_country=supported_country,
             allowed_bank_providers=allowed_bank_providers,
+            is_precalculation_allowed=is_precalculation_allowed,
         )
 
         payment_method_rules.additional_properties = d

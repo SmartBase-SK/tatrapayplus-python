@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from ..models.address import Address
     from ..models.register_for_comfort_pay_obj import RegisterForComfortPayObj
     from ..models.signed_card_id_obj import SignedCardIdObj
+    from ..models.transaction_ipsp_data import TransactionIPSPData
 
 
 T = TypeVar("T", bound="CardDetail")
@@ -30,6 +31,7 @@ class CardDetail:
         billing_address (Union[Unset, Address]):
         shipping_address (Union[Unset, Address]):
         comfort_pay (Union['RegisterForComfortPayObj', 'SignedCardIdObj', Unset]):
+        ipsp_data (Union[Unset, TransactionIPSPData]): In case of payment facilitator mode - this structure is mandatory
     """
 
     card_holder: str
@@ -38,6 +40,7 @@ class CardDetail:
     billing_address: Union[Unset, "Address"] = UNSET
     shipping_address: Union[Unset, "Address"] = UNSET
     comfort_pay: Union["RegisterForComfortPayObj", "SignedCardIdObj", Unset] = UNSET
+    ipsp_data: Union[Unset, "TransactionIPSPData"] = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -67,6 +70,10 @@ class CardDetail:
         else:
             comfort_pay = self.comfort_pay.to_dict()
 
+        ipsp_data: Union[Unset, dict[str, Any]] = UNSET
+        if not isinstance(self.ipsp_data, Unset):
+            ipsp_data = self.ipsp_data.to_dict()
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -84,6 +91,8 @@ class CardDetail:
             field_dict["shippingAddress"] = shipping_address
         if comfort_pay is not UNSET:
             field_dict["comfortPay"] = comfort_pay
+        if ipsp_data is not UNSET:
+            field_dict["ipspData"] = ipsp_data
 
         return field_dict
 
@@ -92,6 +101,7 @@ class CardDetail:
         from ..models.address import Address
         from ..models.register_for_comfort_pay_obj import RegisterForComfortPayObj
         from ..models.signed_card_id_obj import SignedCardIdObj
+        from ..models.transaction_ipsp_data import TransactionIPSPData
 
         d = dict(src_dict)
         card_holder = d.pop("cardHolder")
@@ -138,6 +148,13 @@ class CardDetail:
 
         comfort_pay = _parse_comfort_pay(d.pop("comfortPay", UNSET))
 
+        _ipsp_data = d.pop("ipspData", UNSET)
+        ipsp_data: Union[Unset, TransactionIPSPData]
+        if isinstance(_ipsp_data, Unset):
+            ipsp_data = UNSET
+        else:
+            ipsp_data = TransactionIPSPData.from_dict(_ipsp_data)
+
         card_detail = cls(
             card_holder=card_holder,
             card_pay_lang_override=card_pay_lang_override,
@@ -145,6 +162,7 @@ class CardDetail:
             billing_address=billing_address,
             shipping_address=shipping_address,
             comfort_pay=comfort_pay,
+            ipsp_data=ipsp_data,
         )
 
         card_detail.additional_properties = d

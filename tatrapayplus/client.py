@@ -28,6 +28,7 @@ from tatrapayplus.models import (
     Field40XErrorBody,
     Field400ErrorBody,
     GetAccessTokenResponse400,
+    BasicCalculationRequest,
 )
 from tatrapayplus.models.appearance_logo_request import AppearanceLogoRequest
 from tatrapayplus.models.appearance_request import AppearanceRequest
@@ -102,7 +103,9 @@ class TBPlusSDK:
             response.raise_for_status()
         except Exception as e:
             json_data = response.json()
-            error_body: Union[None, Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody] = None
+            error_body: Union[
+                None, Field400ErrorBody, GetAccessTokenResponse400, Field40XErrorBody
+            ] = None
             if Urls.AUTH_ENDPOINT in response.url:
                 error_body = GetAccessTokenResponse400.from_dict(json_data)
             elif response.status_code == 400:
@@ -160,8 +163,8 @@ class TBPlusSDK:
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("cardDetail", {}).get("cardHolder")
         if card_holder:
-            cleaned_request["cardDetail"]["cardHolder"] = trim_and_remove_special_characters(
-                remove_diacritics(card_holder)
+            cleaned_request["cardDetail"]["cardHolder"] = (
+                trim_and_remove_special_characters(remove_diacritics(card_holder))
             )
 
         response = self.handle_response(self.session.post(url, json=cleaned_request))
@@ -181,8 +184,8 @@ class TBPlusSDK:
         cleaned_request = remove_special_characters_from_strings(request.to_dict())
         card_holder = cleaned_request.get("tdsData", {}).get("cardHolder")
         if card_holder:
-            cleaned_request["tdsData"]["cardHolder"] = trim_and_remove_special_characters(
-                remove_diacritics(card_holder)
+            cleaned_request["tdsData"]["cardHolder"] = (
+                trim_and_remove_special_characters(remove_diacritics(card_holder))
             )
 
         response = self.handle_response(self.session.post(url, json=cleaned_request))
@@ -206,7 +209,9 @@ class TBPlusSDK:
         self.log(response, helpers)
         return {"status": status, **helpers}
 
-    def update_payment(self, payment_id: str, request: CardPayUpdateInstruction) -> Response:
+    def update_payment(
+        self, payment_id: str, request: CardPayUpdateInstruction
+    ) -> Response:
         url = f"{self.base_url}{Urls.PAYMENTS}/{payment_id}"
         self.session.headers = self.get_default_headers()
         self.session.headers["Idempotency-Key"] = self.session.headers["X-Request-ID"]
@@ -227,7 +232,11 @@ class TBPlusSDK:
         available_methods: list[PaymentMethodRules] = []
 
         for method in response.payment_methods:
-            if currency_code and method.supported_currency and currency_code not in list(method.supported_currency):
+            if (
+                currency_code
+                and method.supported_currency
+                and currency_code not in list(method.supported_currency)
+            ):
                 continue
 
             if total_amount is not None and method.amount_range_rule:
@@ -236,7 +245,11 @@ class TBPlusSDK:
                 if not (min_amount <= total_amount <= max_amount):
                     continue
 
-            if country_code and method.supported_country and country_code not in list(method.supported_country):
+            if (
+                country_code
+                and method.supported_country
+                and country_code not in list(method.supported_country)
+            ):
                 continue
 
             available_methods.append(method)
@@ -253,8 +266,18 @@ class TBPlusSDK:
         self.session.headers = self.get_default_headers()
         return self.handle_response(self.session.post(url, json=request.to_dict()))
 
+    def precalculate_loan(
+        self, request: BasicCalculationRequest, ip_address: str
+    ) -> Response:
+        url = f"{self.base_url}{Urls.LOAN_PRECALCULATION}"
+        self.session.headers = self.get_default_headers()
+        self.session.headers["IP-Address"] = ip_address
+        return self.handle_response(self.session.put(url, json=request.to_dict()))
+
     @staticmethod
-    def generate_signed_card_id_from_cid(cid: str, public_key_content: Optional[str] = None) -> Optional[str]:
+    def generate_signed_card_id_from_cid(
+        cid: str, public_key_content: Optional[str] = None
+    ) -> Optional[str]:
         if public_key_content is None:
             try:
                 public_key_path = Path(__file__).parent / "../ECID_PUBLIC_KEY_2023.txt"
@@ -283,7 +306,9 @@ class TBPlusSDK:
             )
 
             base64_encoded = b64encode(encrypted).decode("utf-8")
-            return "\n".join(base64_encoded[i : i + 64] for i in range(0, len(base64_encoded), 64))
+            return "\n".join(
+                base64_encoded[i : i + 64] for i in range(0, len(base64_encoded), 64)
+            )
 
         except Exception as e:
             print("Encryption error:", e)

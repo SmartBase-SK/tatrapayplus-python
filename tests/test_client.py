@@ -22,7 +22,7 @@ from tatrapayplus.models import (
     CardPayUpdateInstruction,
     CardPayUpdateInstructionOperationType,
     ColorAttribute,
-    DirectTransactionIPSPData,
+    TransactionIPSPData,
     DirectTransactionTDSData,
     InitiateDirectTransactionRequest,
     ItemDetail,
@@ -34,6 +34,8 @@ from tatrapayplus.models import (
     PaymentSymbols,
     RegisterForComfortPayObj,
     UserData,
+    BasicCalculationRequest,
+    BasicCalculationRequestPaymentMethod,
 )
 from tatrapayplus.models.amount import Amount
 from tatrapayplus.models.bank_transfer import BankTransfer
@@ -184,7 +186,7 @@ def test_create_direct_payment(tatrapay_client):
                 country="SK",
             ),
         ),
-        ipsp_data=DirectTransactionIPSPData(
+        ipsp_data=TransactionIPSPData(
             sub_merchant_id="5846864684",
             name="Test Predajca",
             location="Bratislava",
@@ -336,3 +338,33 @@ def test_retry_policy(tatrapay_client):
 
     assert response.status_code == 200
     assert len(responses.calls) == retry_count + 1
+
+
+def test_precalculate_loan():
+    tatrapay_client = TBPlusSDK(
+        client_id=os.environ["TATRAPAY_CLIENT_ID"],
+        client_secret=os.environ["TATRAPAY_CLIENT_SECRET"],
+        mode=Mode.PRODUCTION,
+        logger=TestLogger(),
+    )
+
+    loan_data = BasicCalculationRequest(
+        loan_amount=250.45,
+        payment_method=BasicCalculationRequestPaymentMethod.PAY_LATER,
+    )
+
+    loan_response = tatrapay_client.precalculate_loan(
+        request=loan_data,
+        ip_address="127.0.0.1",
+    )
+
+    assert loan_response.status_code == 200
+    for loan_item in loan_response.json():
+        assert loan_item["loanDuration"] is not None
+        assert loan_item["loanInterestRate"] is not None
+        assert loan_item["totalAmount"] is not None
+        assert loan_item["preference"] is not None
+        assert loan_item["installmentAmount"] is not None
+        assert loan_item["mainPreference"] is not None
+        assert loan_item["rpmn"] is not None
+        assert loan_item["loanFee"] is not None
