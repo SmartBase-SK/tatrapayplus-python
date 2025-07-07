@@ -25,6 +25,8 @@ from tatrapayplus.helpers import (
     trim_and_remove_special_characters,
 )
 from tatrapayplus.models import (
+    BasicCalculationRequest,
+    BasicCalculationResponseItem,
     Field40XErrorBody,
     Field400ErrorBody,
     GetAccessTokenResponse400,
@@ -252,6 +254,21 @@ class TBPlusSDK:
         url = f"{self.base_url}{Urls.APPEARANCE_LOGO}"
         self.session.headers = self.get_default_headers()
         return self.handle_response(self.session.post(url, json=request.to_dict()))
+
+    def precalculate_loan(
+        self, request: BasicCalculationRequest, ip_address: str
+    ) -> list[BasicCalculationResponseItem]:
+        loan_offers: list[BasicCalculationResponseItem] = []
+
+        url = f"{self.base_url}{Urls.LOAN_PRECALCULATION}"
+        self.session.headers = self.get_default_headers()
+        self.session.headers["IP-Address"] = ip_address
+
+        response = self.handle_response(self.session.put(url, json=request.to_dict()))
+        for loan_item in response.json():
+            loan_offers.append(BasicCalculationResponseItem.from_dict(loan_item))
+
+        return loan_offers
 
     @staticmethod
     def generate_signed_card_id_from_cid(cid: str, public_key_content: Optional[str] = None) -> Optional[str]:

@@ -16,13 +16,14 @@ from tatrapayplus.models import (
     ApplePayToken,
     ApplePayTokenToken,
     ApplePayTokenTokenHeader,
+    BasicCalculationRequest,
+    BasicCalculationRequestPaymentMethod,
     CapacityInfo,
     CardDetail,
     CardDetailCardPayLangOverride,
     CardPayUpdateInstruction,
     CardPayUpdateInstructionOperationType,
     ColorAttribute,
-    DirectTransactionIPSPData,
     DirectTransactionTDSData,
     InitiateDirectTransactionRequest,
     ItemDetail,
@@ -33,6 +34,7 @@ from tatrapayplus.models import (
     PaymentMethod,
     PaymentSymbols,
     RegisterForComfortPayObj,
+    TransactionIPSPData,
     UserData,
 )
 from tatrapayplus.models.amount import Amount
@@ -184,7 +186,7 @@ def test_create_direct_payment(tatrapay_client):
                 country="SK",
             ),
         ),
-        ipsp_data=DirectTransactionIPSPData(
+        ipsp_data=TransactionIPSPData(
             sub_merchant_id="5846864684",
             name="Test Predajca",
             location="Bratislava",
@@ -336,3 +338,36 @@ def test_retry_policy(tatrapay_client):
 
     assert response.status_code == 200
     assert len(responses.calls) == retry_count + 1
+
+
+def test_precalculate_loan():
+    tatrapay_client = TBPlusSDK(
+        client_id=os.environ["TATRAPAY_CLIENT_ID"],
+        client_secret=os.environ["TATRAPAY_CLIENT_SECRET"],
+        mode=Mode.PRODUCTION,
+        logger=TestLogger(),
+    )
+
+    loan_data = BasicCalculationRequest(
+        loan_amount=250.45,
+        payment_method=BasicCalculationRequestPaymentMethod.PAY_LATER,
+        capacity_info=CapacityInfo(
+            monthly_income=2000.0,
+            monthly_expenses=800.0,
+            number_of_children=1,
+        ),
+    )
+    loan_offers = tatrapay_client.precalculate_loan(
+        request=loan_data,
+        ip_address="127.0.0.1",
+    )
+
+    for loan_offer in loan_offers:
+        assert loan_offer.loan_duration is not None
+        assert loan_offer.loan_interest_rate is not None
+        assert loan_offer.total_amount is not None
+        assert loan_offer.preference is not None
+        assert loan_offer.installment_amount is not None
+        assert loan_offer.main_preference is not None
+        assert loan_offer.rpmn is not None
+        assert loan_offer.loan_fee is not None

@@ -15,6 +15,7 @@ class Urls:
     STATUS = "/status"
     APPEARANCES = "/v1/appearances"
     APPEARANCE_LOGO = APPEARANCES + "/logo"
+    LOAN_PRECALCULATION = "/v1/payments/loans/precalculation"
 
 
 class SimpleStatus(str, Enum):

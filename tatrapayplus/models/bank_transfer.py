@@ -14,10 +14,25 @@ class BankTransfer:
     """Bank transder attributes
 
     Attributes:
-        remittance_information_unstructured (Union[Unset, str]): Unstructured remittance information. At present,
-            Tatrabanka bank transfer does not display the remittance information. SEPA remittanceInformationUnstructured
-            contains 140 characters. For TatraPayPlus purposes, the first up to 40 characters are assigned to the paymentId.
-            Others 100 characters are free to use
+        remittance_information_unstructured (Union[Unset, str]): Unstructured transfer information. Currently,
+            Tatrabanka bank transfer does not display the transfer information. The entire SEPA
+            remittanceInformationUnstructured contains 140 characters. The structure of the string consists of 3 parts:
+
+                - A. paymentId - fixed 40 characters are reserved for paymentId
+                - B. Merchant Name value length - provided in the contract, up to 50 characters
+                - C. Custom value length - free characters are calculated as C = 140-A-(B+1). Depends on the length of the
+            merchant name.
+
+                E.g. Merchant name = MerchantABCD,s.r.o. (19 characters + 1 separator space). 80 characters are available.
+
+                The result of the UnstructuredTransferInformation will look like this
+
+                07b940d2-8b82-4c7a-a0dd-5ebeabcf1f3d MerchantABCD,s.r.o. Your text in remittance
+
+                If the value of RemittanceInformationUnstructured in this attribute is longer than the calculated C, your
+            custom value will be truncated.
+
+
              Example: Ref Number Merchant.
     """
 
