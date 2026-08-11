@@ -32,13 +32,13 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/SmartBase-SK/tatrapayplus-python
+    $ git clone git://github.com/tatrabanka/tatrapayplus-python
 
 Or download the `tarball`_:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/SmartBase-SK/tatrapayplus-python/tarball/master
+    $ curl -OJL https://github.com/tatrabanka/tatrapayplus-python/tarball/master
 
 Once you have a copy of the source, you can install it with:
 
@@ -47,5 +47,5 @@ Once you have a copy of the source, you can install it with:
     $ python setup.py install
 
 
-.. _Github repo: https://github.com/SmartBase-SK/tatrapayplus-python
-.. _tarball: https://github.com/SmartBase-SK/tatrapayplus-python/tarball/master
+.. _Github repo: https://github.com/tatrabanka/tatrapayplus-python
+.. _tarball: https://github.com/tatrabanka/tatrapayplus-python/tarball/master

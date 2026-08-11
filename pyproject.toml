@@ -39,9 +39,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://SmartBase-SK.github.io/tatrapayplus-python/"
-Repository = "https://github.com/SmartBase-SK/tatrapayplus-python"
-Documentation = "https://SmartBase-SK.github.io/tatrapayplus-python/"
+Homepage = "https://sdk.tatrabanka.sk"
+Repository = "https://github.com/tatrabanka/tatrapayplus-python"
+Documentation = "https://sdk.tatrabanka.sk"
 
 
 [build-system]
